@@ -23,8 +23,16 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import { magnetometer, SensorTypes, setUpdateIntervalForType } from "react-native-sensors";
+
 
 const Home: () => React$Node = () => {
+  setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
+
+  const subscription = magnetometer.subscribe(({ x, y, z, timestamp }) =>
+    console.log({ x, y, z, timestamp })
+  );
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
