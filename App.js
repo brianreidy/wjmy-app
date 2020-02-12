@@ -3,7 +3,7 @@ import {useScreens} from 'react-native-screens';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Home from './src/ui/Home/Home.js';
+import Home from './src/ui/Home/Home';
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useScreens();
