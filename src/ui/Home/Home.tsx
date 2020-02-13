@@ -24,13 +24,30 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import { magnetometer, SensorTypes, setUpdateIntervalForType } from "react-native-sensors";
+import database from '@react-native-firebase/database';
 
+// This link is helpful https://invertase.io/oss/react-native-firebase/v6/database/quick-start
+function writeUserData(x,y,z, timestamp){
+  console.log({ x, y, z, timestamp })
+    database().ref(timestamp).write({
+        x,
+        y,
+        z,
+        "magnetometer"
+    }).then((data)=>{
+        //success callback
+        console.log('data ' , data)
+    }).catch((error)=>{
+        //error callback
+        console.log('error ' , error)
+    })
+}
 
 const Home: () => React$Node = () => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
 
   const subscription = magnetometer.subscribe(({ x, y, z, timestamp }) =>
-    console.log({ x, y, z, timestamp })
+    writeUserData(x,y,z, timestamp)
   );
 
   return (
