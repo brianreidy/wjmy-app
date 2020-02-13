@@ -14,6 +14,7 @@ import {
   View,
   Text,
   StatusBar,
+  Button
 } from 'react-native';
 
 import {
@@ -23,33 +24,40 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import { magnetometer, SensorTypes, setUpdateIntervalForType } from "react-native-sensors";
+
+import firebase from '@react-native-firebase/app';
 import database from '@react-native-firebase/database';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 // This link is helpful https://invertase.io/oss/react-native-firebase/v6/database/quick-start
-function writeUserData(x,y,z, timestamp){
-  console.log({ x, y, z, timestamp })
-    database().ref("magnetometer").write({
-        x,
-        y,
-        z,
-        timestamp
-    }).then((data)=>{
-        //success callback
-        console.log('data ' , data)
-    }).catch((error)=>{
-        //error callback
-        console.log('error ' , error)
-    })
+function writeUserData(email,fname,lname){
+  console.log(firebase.database())
+  writeBatch()
+  database().ref("Users").update({
+      email,
+      fname,
+      lname
+  }).then((data)=>{
+      //success callback
+      console.log('data ' , data)
+  }).catch((error)=>{
+      //error callback
+      console.log('error ' , error)
+  })
+}
+
+function writeBatch () {
+  const batch = firebase.firestore().batch();
+  const docRef = firebase.firestore().doc('users/dsmith');
+
+  batch.set(docRef, {
+    name: 'David Smith',
+    age: 25,
+    });
 }
 
 const Home: () => React$Node = () => {
-  setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
-
-  const subscription = magnetometer.subscribe(({ x, y, z, timestamp }) =>
-    writeUserData(x,y,z, timestamp)
-  );
-
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -65,11 +73,13 @@ const Home: () => React$Node = () => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
+              <Text style={styles.sectionTitle}>Write to Firebase</Text>
               <Text style={styles.sectionDescription}>
                 Edit <Text style={styles.highlight}>App.js</Text> to change this
                 screen and then come back to see your edits.
               </Text>
+              <Button title="Write to Database" onPress={() => writeUserData("zpholderness@gmail.com","zo","holderness")}/>
+
             </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>See Your Changes</Text>
