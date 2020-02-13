@@ -29,11 +29,11 @@ import database from '@react-native-firebase/database';
 // This link is helpful https://invertase.io/oss/react-native-firebase/v6/database/quick-start
 function writeUserData(x,y,z, timestamp){
   console.log({ x, y, z, timestamp })
-    database().ref(timestamp).write({
+    database().ref("magnetometer").write({
         x,
         y,
         z,
-        "magnetometer"
+        timestamp
     }).then((data)=>{
         //success callback
         console.log('data ' , data)
