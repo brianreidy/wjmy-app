@@ -78,7 +78,7 @@ const Home: () => React$Node = () => {
                 Edit <Text style={styles.highlight}>App.js</Text> to change this
                 screen and then come back to see your edits.
               </Text>
-              <Button title="Write to Database" onPress={() => writeUserData("zpholderness@gmail.com","zo","holderness")}/>
+              <Button title="Write to Database" onPress={() => writeUserData("zph","brian","r")}/>
 
             </View>
             <View style={styles.sectionContainer}>
