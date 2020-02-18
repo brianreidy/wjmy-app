@@ -66,7 +66,7 @@ function writeBatch() {
   });
 }
 
-const Home: () => React$Node = () => {
+const Home: React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
 
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
@@ -97,6 +97,10 @@ const Home: () => React$Node = () => {
                 title="Write to Database"
                 onPress={() => writeUserData('zph', 'brian', 'r')}
               />
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Navigate to HeartRate</Text>
+              <Button title="GOGOGO" onPress={navigate('HeartRate')} />
             </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>See Your Changes</Text>
