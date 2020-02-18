@@ -27,7 +27,7 @@ import {
 
 import firebase from '@react-native-firebase/app';
 import database from '@react-native-firebase/database';
-// import firestore from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 // import auth from '@react-native-firebase/auth';
 import {
   magnetometer,
@@ -66,7 +66,7 @@ function writeBatch() {
   });
 }
 
-const Home: () => React$Node = () => {
+const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
 
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
@@ -96,6 +96,13 @@ const Home: () => React$Node = () => {
               <Button
                 title="Write to Database"
                 onPress={() => writeUserData('zph', 'brian', 'r')}
+              />
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Go to Fitbit</Text>
+              <Button
+                title="Weeewoooweeewoo"
+                onPress={() => navigate('Fitbit')}
               />
             </View>
             <View style={styles.sectionContainer}>
