@@ -1,4 +1,4 @@
 export default {
-  client_id: '22BKYX',
-  client_secret: 'ac5a6033ac9443008d074d8b85dc1de9',
+  client_id: '22BFY8',
+  client_secret: 'd1fcb2d93e608265e26fb82bdfb5b006',
 };
