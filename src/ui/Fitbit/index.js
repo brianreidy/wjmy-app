@@ -27,7 +27,7 @@ function OAuth(client_id, cb) {
 }
 
 function getData(access_token) {
-  fetch('https://api.fitbit.com/1.2/user/-/sleep/date/2017-06-27.json', {
+  fetch('https://api.fitbit.com/1/user/-/activities/heart/date/today/1d.json', {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${access_token}`,
