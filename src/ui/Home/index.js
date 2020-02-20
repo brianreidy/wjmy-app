@@ -6,13 +6,14 @@
  * @flow
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
   Text,
+  TextInput,
   StatusBar,
   Button,
 } from 'react-native';
@@ -28,47 +29,47 @@ import {
 import firebase from '@react-native-firebase/app';
 import database from '@react-native-firebase/database';
 import firestore from '@react-native-firebase/firestore';
-// import auth from '@react-native-firebase/auth';
+import UserInput from './UserInput';
+import DropDown from './DropDown';
+
 import {
   magnetometer,
   SensorTypes,
   setUpdateIntervalForType,
 } from 'react-native-sensors';
 
-// This link is helpful https://invertase.io/oss/react-native-firebase/v6/database/quick-start
-function writeUserData(email, fname, lname) {
-  console.log(firebase.database());
-  writeBatch();
-  database()
-    .ref('Users')
-    .update({
-      email,
-      fname,
-      lname,
-    })
-    .then(data => {
-      //success callback
-      console.log('data ', data);
-    })
-    .catch(error => {
-      //error callback
-      console.log('error ', error);
-    });
+let db = firestore();
+let batch = db.batch();
+var riderDB;
+
+function makeid(length) {
+   var result           = '';
+   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
 }
 
-function writeBatch() {
-  const batch = firebase.firestore().batch();
-  const docRef = firebase.firestore().doc('users/dsmith');
+function setUpUser(name, level){
 
-  batch.set(docRef, {
-    name: 'David Smith',
-    age: 25,
-  });
+  console.log(name)
+  userID = makeid(20)
+  myride = db.collection('users').doc(userID);
+  myride.set({"Name": name, "Level":level})
+  // if this is first ride, add logic later if not first ride
+  riderDB = myride.collection('ride1')
+}
+
+function writeData(doc, data){
+  riderDB.set({doc:data})
 }
 
 const Home: () => React$Node = () => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
-
+  const [name, setName] = useState('Rider Name');
+  const [level, setLevel] = useState('Bike Riding Experience');
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
@@ -88,14 +89,12 @@ const Home: () => React$Node = () => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Write to Firebase</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
+              <Text style={styles.sectionTitle}>Set up Rider</Text>
+              <Text style={styles.highlight}>Name </Text><UserInput text={name} setText={setName}/>
+              <Text style={styles.highlight}>Rider Level </Text><UserInput text={level} setText={setLevel}/>
               <Button
                 title="Write to Database"
-                onPress={() => writeUserData('zph', 'brian', 'r')}
+                onPress={() => setUpUser(name, level)}
               />
             </View>
             <View style={styles.sectionContainer}>
