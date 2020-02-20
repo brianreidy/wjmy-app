@@ -3,8 +3,8 @@ import {useScreens} from 'react-native-screens';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 
-import Home from './src/ui/Home/Home';
 import Fitbit from './src/ui/Fitbit';
+import Home from './src/ui/Home';
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useScreens();
