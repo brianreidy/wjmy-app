@@ -43,8 +43,8 @@ let batch = db.batch();
 var riderDB;
 
 function makeid(length) {
-   var result           = '';
-   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var result = '';
+   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
    var charactersLength = characters.length;
    for ( var i = 0; i < length; i++ ) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -55,7 +55,7 @@ function makeid(length) {
 function setUpUser(name, level){
 
   console.log(name)
-  userID = makeid(20)
+  userID = name.concat((makeid(5)).toString())
   myride = db.collection('users').doc(userID);
   myride.set({"Name": name, "Level":level})
   // if this is first ride, add logic later if not first ride
@@ -63,6 +63,7 @@ function setUpUser(name, level){
 }
 
 function writeData(doc, data){
+  // write data in as a dictionary
   riderDB.set({doc:data})
 }
 
