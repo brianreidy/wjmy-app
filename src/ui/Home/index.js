@@ -43,28 +43,28 @@ let batch = db.batch();
 var riderDB;
 
 function makeid(length) {
-   var result = '';
-   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-   var charactersLength = characters.length;
-   for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
+  var result = '';
+  var characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 }
 
-function setUpUser(name, level){
-
-  console.log(name)
-  userID = name.concat((makeid(5)).toString())
+function setUpUser(name, level) {
+  console.log(name);
+  userID = name.concat(makeid(5).toString());
   myride = db.collection('users').doc(userID);
-  myride.set({"Name": name, "Level":level})
+  myride.set({Name: name, Level: level});
   // if this is first ride, add logic later if not first ride
-  riderDB = myride.collection('ride1')
+  riderDB = myride.collection('ride1');
 }
 
-function writeData(doc, data){
+function writeData(doc, data) {
   // write data in as a dictionary
-  riderDB.set({doc:data})
+  riderDB.set({doc: data});
 }
 
 const Home: () => React$Node = () => {
@@ -91,8 +91,10 @@ const Home: () => React$Node = () => {
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Set up Rider</Text>
-              <Text style={styles.highlight}>Name </Text><UserInput text={name} setText={setName}/>
-              <Text style={styles.highlight}>Rider Level </Text><UserInput text={level} setText={setLevel}/>
+              <Text style={styles.highlight}>Name </Text>
+              <UserInput text={name} setText={setName} />
+              <Text style={styles.highlight}>Rider Level </Text>
+              <UserInput text={level} setText={setLevel} />
               <Button
                 title="Write to Database"
                 onPress={() => setUpUser(name, level)}
