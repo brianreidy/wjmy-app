@@ -15,6 +15,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
   },
 });
 export default UserInput;
