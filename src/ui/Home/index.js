@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -17,58 +17,31 @@ import {
   Button,
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
 
-import firebase from '@react-native-firebase/app';
-import database from '@react-native-firebase/database';
-import firestore from '@react-native-firebase/firestore';
-// import auth from '@react-native-firebase/auth';
+// import firebase from '@react-native-firebase/app';
+// import database from '@react-native-firebase/database';
+
+import UserInput from './UserInput';
+
 import {
   magnetometer,
   SensorTypes,
   setUpdateIntervalForType,
 } from 'react-native-sensors';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import setUpUser from '../../arch/setUpUser';
 
-// This link is helpful https://invertase.io/oss/react-native-firebase/v6/database/quick-start
-function writeUserData(email, fname, lname) {
-  console.log(firebase.database());
-  writeBatch();
-  database()
-    .ref('Users')
-    .update({
-      email,
-      fname,
-      lname,
-    })
-    .then(data => {
-      //success callback
-      console.log('data ', data);
-    })
-    .catch(error => {
-      //error callback
-      console.log('error ', error);
-    });
-}
-
-function writeBatch() {
-  const batch = firebase.firestore().batch();
-  const docRef = firebase.firestore().doc('users/dsmith');
-
-  batch.set(docRef, {
-    name: 'David Smith',
-    age: 25,
-  });
-}
+// let batch = db.batch();
+const submit = (name, level, navigate) => {
+  setUpUser(name, level);
+  navigate('InRide');
+};
 
 const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
-
+  const [name, setName] = useState('Rider Name');
+  const [level, setLevel] = useState(0);
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
@@ -88,42 +61,62 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Write to Firebase</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-              <Button
-                title="Write to Database"
-                onPress={() => writeUserData('zph', 'brian', 'r')}
-              />
+              <Text style={styles.sectionTitle}>Set up Rider</Text>
+              <Text style={styles.highlight}>Name </Text>
+              <UserInput text={name} setText={setName} />
+              <Text style={styles.highlight}>Rider Level </Text>
+              <TouchableOpacity
+                onPress={() => setLevel(0)}
+                style={[
+                  styles.button,
+                  level === 0 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 0 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Beginner
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLevel(1)}
+                style={[
+                  styles.button,
+                  level === 1 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 1 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Intermediete
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLevel(2)}
+                style={[
+                  styles.button,
+                  level === 2 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 2 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Advanced
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.submit]}
+                onPress={() => submit(name, level, navigate)}>
+                <Text>Submit</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Go to Fitbit</Text>
               <Button
-                title="Weeewoooweeewoo"
+                title="Test the Fibit API"
                 onPress={() => navigate('Fitbit')}
               />
             </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -132,6 +125,29 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
 };
 
 const styles = StyleSheet.create({
+  clickedText: {
+    color: Colors.white,
+  },
+  unClickedText: {
+    color: Colors.black,
+  },
+  clickedButton: {
+    backgroundColor: '#4A6572',
+  },
+  unClickedButton: {
+    backgroundColor: Colors.lighter,
+  },
+  submit: {
+    marginTop: 40,
+    backgroundColor: '#F9AA33',
+  },
+  button: {
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 20,
+    marginVertical: 5,
+    borderRadius: 8,
+  },
   scrollView: {
     backgroundColor: Colors.lighter,
   },
@@ -151,13 +167,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.black,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
   highlight: {
+    paddingVertical: 5,
     fontWeight: '700',
   },
   footer: {
