@@ -67,7 +67,7 @@ function writeData(doc, data) {
   riderDB.set({doc: data});
 }
 
-const Home: () => React$Node = () => {
+const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   const [name, setName] = useState('Rider Name');
   const [level, setLevel] = useState('Bike Riding Experience');
@@ -98,6 +98,13 @@ const Home: () => React$Node = () => {
               <Button
                 title="Write to Database"
                 onPress={() => setUpUser(name, level)}
+              />
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Go to Fitbit</Text>
+              <Button
+                title="Weeewoooweeewoo"
+                onPress={() => navigate('Fitbit')}
               />
             </View>
             <View style={styles.sectionContainer}>
