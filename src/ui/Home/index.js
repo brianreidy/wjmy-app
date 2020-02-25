@@ -13,64 +13,35 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
   StatusBar,
   Button,
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
 
-import firebase from '@react-native-firebase/app';
-import database from '@react-native-firebase/database';
-import firestore from '@react-native-firebase/firestore';
+// import firebase from '@react-native-firebase/app';
+// import database from '@react-native-firebase/database';
+
 import UserInput from './UserInput';
-import DropDown from './DropDown';
 
 import {
   magnetometer,
   SensorTypes,
   setUpdateIntervalForType,
 } from 'react-native-sensors';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import setUpUser from '../../arch/setUpUser';
 
-let db = firestore();
-let batch = db.batch();
-var riderDB;
-
-function makeid(length) {
-  var result = '';
-  var characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-function setUpUser(name, level) {
-  console.log(name);
-  userID = name.concat(makeid(5).toString());
-  myride = db.collection('users').doc(userID);
-  myride.set({Name: name, Level: level});
-  // if this is first ride, add logic later if not first ride
-  riderDB = myride.collection('ride1');
-}
-
-function writeData(doc, data) {
-  // write data in as a dictionary
-  riderDB.set({doc: data});
-}
+// let batch = db.batch();
+const submit = (name, level, navigate) => {
+  setUpUser(name, level);
+  navigate('InRide');
+};
 
 const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   const [name, setName] = useState('Rider Name');
-  const [level, setLevel] = useState('Bike Riding Experience');
+  const [level, setLevel] = useState(0);
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
@@ -94,38 +65,58 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
               <Text style={styles.highlight}>Name </Text>
               <UserInput text={name} setText={setName} />
               <Text style={styles.highlight}>Rider Level </Text>
-              <UserInput text={level} setText={setLevel} />
-              <Button
-                title="Write to Database"
-                onPress={() => setUpUser(name, level)}
-              />
+              <TouchableOpacity
+                onPress={() => setLevel(0)}
+                style={[
+                  styles.button,
+                  level === 0 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 0 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Beginner
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLevel(1)}
+                style={[
+                  styles.button,
+                  level === 1 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 1 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Intermediete
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLevel(2)}
+                style={[
+                  styles.button,
+                  level === 2 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 2 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Advanced
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.submit]}
+                onPress={() => submit(name, level, navigate)}>
+                <Text>Submit</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Go to Fitbit</Text>
               <Button
-                title="Weeewoooweeewoo"
+                title="Test the Fibit API"
                 onPress={() => navigate('Fitbit')}
               />
             </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -134,6 +125,29 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
 };
 
 const styles = StyleSheet.create({
+  clickedText: {
+    color: Colors.white,
+  },
+  unClickedText: {
+    color: Colors.black,
+  },
+  clickedButton: {
+    backgroundColor: '#4A6572',
+  },
+  unClickedButton: {
+    backgroundColor: Colors.lighter,
+  },
+  submit: {
+    marginTop: 40,
+    backgroundColor: '#F9AA33',
+  },
+  button: {
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 20,
+    marginVertical: 5,
+    borderRadius: 8,
+  },
   scrollView: {
     backgroundColor: Colors.lighter,
   },
@@ -153,13 +167,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.black,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
   highlight: {
+    paddingVertical: 5,
     fontWeight: '700',
   },
   footer: {
