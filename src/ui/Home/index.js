@@ -34,7 +34,8 @@ import setUpUser from '../../arch/setUpUser';
 
 // let batch = db.batch();
 const submit = (name, level, navigate) => {
-  if (!name && !level) {
+  console.log('name and level', name, level);
+  if (name && level) {
     setUpUser(name, level);
     navigate('InRide');
   }
