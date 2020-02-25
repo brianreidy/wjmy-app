@@ -34,14 +34,16 @@ import setUpUser from '../../arch/setUpUser';
 
 // let batch = db.batch();
 const submit = (name, level, navigate) => {
-  setUpUser(name, level);
-  navigate('InRide');
+  if (!name && !level) {
+    setUpUser(name, level);
+    navigate('InRide');
+  }
 };
 
 const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
-  const [name, setName] = useState('Rider Name');
-  const [level, setLevel] = useState(0);
+  const [name, setName] = useState();
+  const [level, setLevel] = useState();
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
@@ -61,7 +63,7 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Set up Rider</Text>
+              <Text style={styles.sectionTitle}>Rider Setup</Text>
               <Text style={styles.highlight}>Name </Text>
               <UserInput text={name} setText={setName} />
               <Text style={styles.highlight}>Rider Level </Text>
@@ -75,7 +77,7 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 0 ? styles.clickedText : styles.unClickedText
                   }>
-                  Beginner
+                  Interested, but Concerned
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -88,7 +90,7 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 1 ? styles.clickedText : styles.unClickedText
                   }>
-                  Intermediete
+                  Comfortable, but Cautious
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -101,7 +103,20 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 2 ? styles.clickedText : styles.unClickedText
                   }>
-                  Advanced
+                  Enthused & Confident
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setLevel(3)}
+                style={[
+                  styles.button,
+                  level === 3 ? styles.clickedButton : styles.unClickedButton,
+                ]}>
+                <Text
+                  style={
+                    level === 3 ? styles.clickedText : styles.unClickedText
+                  }>
+                  Strong & Fearless
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
