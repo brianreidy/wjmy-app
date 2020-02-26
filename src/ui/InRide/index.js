@@ -11,69 +11,62 @@ import {
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
 
+let mag = [];
 
-let mag = []
-
-const toggleMeasurements = (collecting) => {
-  if (collecting) {
-    try {
-      const mag_subscription = magnetometer.subscribe(({ x, y, z, timestamp }) =>
-      mag.concat({timestamp: {"x": x, "y": y, "z":z}}, console.log(mag))
-      );
-    } catch(err) {
-      // Brian pls help me here, this catch doesn't seem to work
-      console.log(err)
-      Alert.alert("Magnetomometer is not available")
-    }
+const toggleMeasurements = (collecting, myRide) => {
+  const magSubscription = magnetometer.subscribe(
+    ({x, y, z, timestamp}) =>
+      (mag = mag.concat({timestamp: timestamp, points: {x: x, y: y, z: z}})),
+  );
+  if (!collecting) {
+    magSubscription.unsubscribe();
+    myRide.set({mag: mag});
   }
-}
+};
 
-  
-  // const acc_subscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
-  //   compileData(x,y,z, timestamp)
-  // );
-  // const gyr_subscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
-  //   compileData(x,y,z, timestamp)
-  // );
-  // const bar_subscription = barometer.subscribe(({ pressure }) =>
-  //   compileData(x,y,z, timestamp)
-  // );
+// const acc_subscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
+//   compileData(x,y,z, timestamp)
+// );
+// const gyr_subscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
+//   compileData(x,y,z, timestamp)
+// );
+// const bar_subscription = barometer.subscribe(({ pressure }) =>
+//   compileData(x,y,z, timestamp)
+// );
 
-
-const submitMeasures = () => {
-  // write data to firebase
-  writeData(setUpUser, "magnetometer", mag)
-}
-
-const InRide = () => {
+const InRide = props => {
+  const {route} = props;
+  const {params} = route;
+  const {myRide} = params;
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
-  
+
   const [collect, setCollect] = useState(true);
- 
+
   return (
     <View style={styles.container}>
       <Text style={styles.instructions}>Hello World!</Text>
       <TouchableOpacity
-        onPress={() => {toggleMeasurements(collect); setCollect(!collect);}}
+        onPress={() => {
+          toggleMeasurements(collect, myRide);
+          setCollect(!collect);
+        }}
         style={[
           styles.button,
           collect === true ? styles.clickedButton : styles.unClickedButton,
-        ]} >
+        ]}>
         <Text
-          style={
-            collect === true ? styles.clickedText : styles.unClickedText
-          }>
-          {collect== true ? "start ride" : "pause ride"}
+          style={collect === true ? styles.clickedText : styles.unClickedText}>
+          {collect === true ? 'start ride' : 'pause ride'}
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.button, styles.submit]}
         onPress={() => submitMeasures()}>
         <Text>Send ride data to database</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
