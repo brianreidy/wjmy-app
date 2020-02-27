@@ -15,6 +15,7 @@ import {
   Text,
   StatusBar,
   Button,
+  Image,
 } from 'react-native';
 
 import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
@@ -56,7 +57,11 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
-          <Header />
+          <Image
+            style={styles.image}
+            source={require('./bikeSplash.jpg')}
+            overflow={'visible'}
+          />
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
               <Text style={styles.footer}>Engine: Hermes</Text>
@@ -194,6 +199,10 @@ const styles = StyleSheet.create({
     padding: 4,
     paddingRight: 12,
     textAlign: 'right',
+  },
+  image: {
+    width: '100%',
+    height: 200,
   },
 });
 
