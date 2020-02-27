@@ -35,9 +35,8 @@ import setUpUser from '../../arch/setUpUser';
 
 // let batch = db.batch();
 const submit = (name, level, navigate) => {
-  if (name && level) {
+  if (name && level >= 0) {
     const myRide = setUpUser(name, level);
-    console.log(myRide);
     navigate('InRide', {myRide: myRide});
   }
 };
@@ -45,7 +44,7 @@ const submit = (name, level, navigate) => {
 const Home: () => React$Node = ({navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   const [name, setName] = useState();
-  const [level, setLevel] = useState();
+  const [level, setLevel] = useState(-1);
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );

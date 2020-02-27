@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, View, Alert} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
 
@@ -9,7 +9,7 @@ import {
   setUpdateIntervalForType,
 } from 'react-native-sensors';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 let mag = [];
 
@@ -17,6 +17,7 @@ const toggleMeasurements = (collecting, myRide) => {
   const magSubscription = magnetometer.subscribe(
     ({x, y, z, timestamp}) =>
       (mag = mag.concat({timestamp: timestamp, points: {x: x, y: y, z: z}})),
+    error => console.log('magnetometer not available'),
   );
   if (!collecting) {
     magSubscription.unsubscribe();
@@ -34,10 +35,9 @@ const toggleMeasurements = (collecting, myRide) => {
 //   compileData(x,y,z, timestamp)
 // );
 
-const InRide = props => {
-  const {route} = props;
-  const {params} = route;
-  const {myRide} = params;
+const InRide = ({route}) => {
+  const myRide = route.params;
+
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
