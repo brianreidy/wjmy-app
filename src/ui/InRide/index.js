@@ -10,21 +10,23 @@ import {
 } from 'react-native-sensors';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import firestore from '@react-native-firebase/firestore';
 
-let mag = [];
+let mag = {};
 
-const toggleMeasurements = (collecting, myRide) => {
+const toggleMeasurements = (collect) => {
   const magSubscription = magnetometer.subscribe(
     ({x, y, z, timestamp}) =>
-      (mag = mag.concat({timestamp: timestamp, points: {x: x, y: y, z: z}})),
+      (mag[timestamp]={x: x, y: y, z: z}),
     error => console.log('magnetometer not available'),
   );
-  if (!collecting) {
+  if (!collect) {
     magSubscription.unsubscribe();
-    myRide.set({mag: mag});
+    return mag
   }
 };
-
+//(mag = mag.concat({[timestamp]:{x: x, y: y, z: z}}))
+// {timestamp: timestamp, points: {x: x, y: y, z: z}}
 // const acc_subscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
 //   compileData(x,y,z, timestamp)
 // );
@@ -34,9 +36,15 @@ const toggleMeasurements = (collecting, myRide) => {
 // const bar_subscription = barometer.subscribe(({ pressure }) =>
 //   compileData(x,y,z, timestamp)
 // );
+const submitMeasures = (mag, collect, myRide) => {
+  if (collect) {
+    mag = toggleMeasurements(false)
+  } 
+  myRide.doc("magnemometer").set(mag, {merge: true})
+}
 
 const InRide = ({route}) => {
-  const myRide = route.params;
+  const {myRide} = route.params;
 
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
@@ -62,11 +70,11 @@ const InRide = ({route}) => {
           {collect === true ? 'start ride' : 'pause ride'}
         </Text>
       </TouchableOpacity>
-      {/* <TouchableOpacity
+      <TouchableOpacity
         style={[styles.button, styles.submit]}
-        onPress={() => submitMeasures()}>
+        onPress={() => {submitMeasures(mag, collect, myRide)}}>
         <Text>Send ride data to database</Text>
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 };
