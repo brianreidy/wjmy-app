@@ -17,6 +17,7 @@ const toggleMeasurements = (collecting, myRide) => {
   const magSubscription = magnetometer.subscribe(
     ({x, y, z, timestamp}) =>
       (mag = mag.concat({timestamp: timestamp, points: {x: x, y: y, z: z}})),
+    error => console.log('the sensor not available'),
   );
   if (!collecting) {
     magSubscription.unsubscribe();
