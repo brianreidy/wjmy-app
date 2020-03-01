@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
+import useGeolocation from '/locateRider';
 
 import {
   magnetometer,
@@ -11,6 +12,7 @@ import {
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import firestore from '@react-native-firebase/firestore';
+import Geolocation from '@react-native-community/geolocation';
 
 let mag = {};
 
@@ -25,17 +27,27 @@ const toggleMeasurements = (collect) => {
     return mag
   }
 };
-//(mag = mag.concat({[timestamp]:{x: x, y: y, z: z}}))
-// {timestamp: timestamp, points: {x: x, y: y, z: z}}
-// const acc_subscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
-//   compileData(x,y,z, timestamp)
-// );
-// const gyr_subscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
-//   compileData(x,y,z, timestamp)
-// );
-// const bar_subscription = barometer.subscribe(({ pressure }) =>
-//   compileData(x,y,z, timestamp)
-// );
+
+const recordGPS = (collect) => {
+  if (collect) {
+    
+  }
+  useEffect(() => {
+    const watchId = Geolocation.watchPosition(
+      pos => {
+        setError("");
+        setPosition({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
+        });
+      },
+      e => setError(e.message)
+    );
+    return () => Geolocation.clearWatch(watchId);
+  }, []);
+}
+
+
 const submitMeasures = (mag, collect, myRide) => {
   if (collect) {
     mag = toggleMeasurements(false)
@@ -52,6 +64,11 @@ const InRide = ({route}) => {
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
 
   const [collect, setCollect] = useState(true);
+  const [error, setError] = useState("");
+  const [position, setPosition] = useState({
+    latitude: 0,
+    longitude: 0
+  });
 
   return (
     <View style={styles.container}>
