@@ -15,6 +15,7 @@ import firestore from '@react-native-firebase/firestore';
 import Geolocation from "@react-native-community/geolocation";
 
 let mag = {};
+let gps = {};
 
 const toggleMeasurements = (collect) => {
   const magSubscription = magnetometer.subscribe(
@@ -28,17 +29,15 @@ const toggleMeasurements = (collect) => {
   }
 };
 
-const recordGPS = (collect, setPosition) => {
-  console.log(setPosition)
-  
-}
 
 
 const submitMeasures = (mag, collect, myRide) => {
+  console.log("submiting to database")
   if (collect) {
     mag = toggleMeasurements(false)
   } 
   myRide.doc("magnemometer").set(mag, {merge: true})
+  myRide.doc("gps").set(gps, {merge: true})
 }
 
 const InRide = ({route}) => {
@@ -55,21 +54,35 @@ const InRide = ({route}) => {
     latitude: 0,
     longitude: 0
   });
-  //useEffect(() => {
-  const watchId = Geolocation.watchPosition(
-    pos => {
-      setPosition({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude
-      });
-      console.log(pos.coords)
-    },
-    e => setError(e.message), 
-    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 },
-  );
+  useEffect(() => {
+    console.log("using effect)")
+    const watchId = Geolocation.watchPosition(
+      pos => {
+        setPosition({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
+        });
+        if (collect) {
+          (gps[pos.timestamp]=pos.coords)
+        }
+        //console.log(pos.coords)
+        //console.log(pos.timestamp)
+      },
+      e => console.log(e.message),
+      {
+        timeout: 20000,
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        distanceFilter: .1
+      },
+    );
+    console.log(watchId)
+    return () => Geolocation.clearWatch(watchId), console.log("done");
+  }, []);
   //Geolocation.clearWatch(watchId)
     // return () => ;
   //}, []);
+
 
   return (
     <View style={styles.container}>
@@ -77,7 +90,6 @@ const InRide = ({route}) => {
       <TouchableOpacity
         onPress={() => {
           toggleMeasurements(collect, myRide);
-          recordGPS(collect, setPosition);
           setCollect(!collect);
         }}
         style={[
