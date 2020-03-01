@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
-import useGeolocation from '/locateRider';
+
 
 import {
   magnetometer,
@@ -12,7 +12,7 @@ import {
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import firestore from '@react-native-firebase/firestore';
-import Geolocation from '@react-native-community/geolocation';
+import Geolocation from "@react-native-community/geolocation";
 
 let mag = {};
 
@@ -28,23 +28,9 @@ const toggleMeasurements = (collect) => {
   }
 };
 
-const recordGPS = (collect) => {
-  if (collect) {
-    
-  }
-  useEffect(() => {
-    const watchId = Geolocation.watchPosition(
-      pos => {
-        setError("");
-        setPosition({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
-        });
-      },
-      e => setError(e.message)
-    );
-    return () => Geolocation.clearWatch(watchId);
-  }, []);
+const recordGPS = (collect, setPosition) => {
+  console.log(setPosition)
+  
 }
 
 
@@ -64,11 +50,26 @@ const InRide = ({route}) => {
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
 
   const [collect, setCollect] = useState(true);
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const [position, setPosition] = useState({
     latitude: 0,
     longitude: 0
   });
+  //useEffect(() => {
+  const watchId = Geolocation.watchPosition(
+    pos => {
+      setPosition({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude
+      });
+      console.log(pos.coords)
+    },
+    e => setError(e.message), 
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 },
+  );
+  //Geolocation.clearWatch(watchId)
+    // return () => ;
+  //}, []);
 
   return (
     <View style={styles.container}>
@@ -76,6 +77,7 @@ const InRide = ({route}) => {
       <TouchableOpacity
         onPress={() => {
           toggleMeasurements(collect, myRide);
+          recordGPS(collect, setPosition);
           setCollect(!collect);
         }}
         style={[
