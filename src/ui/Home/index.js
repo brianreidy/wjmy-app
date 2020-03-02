@@ -16,9 +16,11 @@ import {
   StatusBar,
   Button,
   Image,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 
-import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
@@ -32,6 +34,32 @@ import {
 } from 'react-native-sensors';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import setUpUser from '../../arch/setUpUser';
+
+async function requestLocationPermission() {
+  if (Platform === 'android') {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'we just met yesterday requires fine location',
+          message:
+            'wjmy requires fine location to ' +
+            'see where our riders are stressed.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use location');
+      } else {
+        console.log('location permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+}
 
 // let batch = db.batch();
 const submit = (name, level, navigate) => {
@@ -48,7 +76,7 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
-
+  requestLocationPermission();
   return (
     <>
       <StatusBar barStyle="dark-content" />

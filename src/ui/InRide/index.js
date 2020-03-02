@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
+import MapView, {Polyline} from 'react-native-maps';
 import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
-
 
 import {
   magnetometer,
@@ -12,33 +12,31 @@ import {
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import firestore from '@react-native-firebase/firestore';
-import Geolocation from "@react-native-community/geolocation";
+import Geolocation from '@react-native-community/geolocation';
 
 let mag = {};
 let gps = {};
+let coordsArr = [];
 
-const toggleMeasurements = (collect) => {
+const toggleMeasurements = collect => {
   const magSubscription = magnetometer.subscribe(
-    ({x, y, z, timestamp}) =>
-      (mag[timestamp]={x: x, y: y, z: z}),
+    ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
     error => console.log('magnetometer not available'),
   );
   if (!collect) {
     magSubscription.unsubscribe();
-    return mag
+    return mag;
   }
 };
 
-
-
 const submitMeasures = (mag, collect, myRide) => {
-  console.log("submiting to database")
+  console.log('submiting to database');
   if (collect) {
-    mag = toggleMeasurements(false)
-  } 
-  myRide.doc("magnemometer").set(mag, {merge: true})
-  myRide.doc("gps").set(gps, {merge: true})
-}
+    mag = toggleMeasurements(false);
+  }
+  myRide.doc('magnemometer').set(mag, {merge: true});
+  myRide.doc('gps').set(gps, {merge: true});
+};
 
 const InRide = ({route}) => {
   const {myRide} = route.params;
@@ -49,70 +47,120 @@ const InRide = ({route}) => {
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
 
   const [collect, setCollect] = useState(true);
+  const [region, setRegion] = useState({
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
   // const [error, setError] = useState("");
   const [position, setPosition] = useState({
     latitude: 0,
-    longitude: 0
+    longitude: 0,
   });
   useEffect(() => {
-    console.log("using effect)")
+    console.log('using effect)');
     const watchId = Geolocation.watchPosition(
       pos => {
         setPosition({
           latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
+          longitude: pos.coords.longitude,
         });
         if (collect) {
-          (gps[pos.timestamp]=pos.coords)
+          gps[pos.timestamp] = pos.coords;
         }
         //console.log(pos.coords)
         //console.log(pos.timestamp)
+        setRegion({
+          longitude: pos.coords.longitude,
+          latitude: pos.coords.latitude,
+          latitudeDelta: 0.00922,
+          longitudeDelta: 0.00421,
+        });
+        coordsArr = [
+          {
+            longitude: pos.coords.longitude,
+            latitude: pos.coords.latitude,
+          },
+          ...coordsArr,
+        ];
       },
       e => console.log(e.message),
       {
         timeout: 20000,
         enableHighAccuracy: true,
         maximumAge: 0,
-        distanceFilter: .1
+        distanceFilter: 0.1,
       },
     );
-    console.log(watchId)
-    return () => Geolocation.clearWatch(watchId), console.log("done");
+    console.log(watchId);
+    return () => Geolocation.clearWatch(watchId), console.log('done');
   }, []);
   //Geolocation.clearWatch(watchId)
-    // return () => ;
+  // return () => ;
   //}, []);
 
-
+  // console.log('location map', coordsArr);
   return (
-    <View style={styles.container}>
-      <Text style={styles.instructions}>Hello World!</Text>
-      <TouchableOpacity
-        onPress={() => {
-          toggleMeasurements(collect, myRide);
-          setCollect(!collect);
-        }}
-        style={[
-          styles.button,
-          collect === true ? styles.clickedButton : styles.unClickedButton,
-        ]}>
-        <Text
-          style={collect === true ? styles.clickedText : styles.unClickedText}>
-          {collect === true ? 'start ride' : 'pause ride'}
+    <SafeAreaView style={styles.container}>
+      <MapView style={styles.map} region={region}>
+        <Polyline
+          coordinates={coordsArr}
+          strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
+          // strokeColors={[
+          //   '#7F0000',
+          //   '#00000000', // no color, creates a "long" gradient between the previous and next coordinate
+          //   '#B24112',
+          //   '#E5845C',
+          //   '#238C23',
+          //   '#7F0000',
+          // ]}
+          strokeWidth={6}
+        />
+      </MapView>
+
+      <View style={styles.buttonContainer}>
+        <Text style={styles.instructions}>
+          long: {position.latitude}
+          {'\n'}
+          lat: {position.longitude}
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.button, styles.submit]}
-        onPress={() => {submitMeasures(mag, collect, myRide)}}>
-        <Text>Send ride data to database</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          onPress={() => {
+            toggleMeasurements(collect, myRide);
+            setCollect(!collect);
+          }}
+          style={[
+            styles.button,
+            collect === true ? styles.clickedButton : styles.unClickedButton,
+          ]}>
+          <Text
+            style={
+              collect === true ? styles.clickedText : styles.unClickedText
+            }>
+            {collect === true ? 'start ride' : 'pause ride'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.submit]}
+          onPress={() => {
+            submitMeasures(mag, collect, myRide);
+          }}>
+          <Text>Send ride data to database</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+  buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
@@ -130,7 +178,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lighter,
   },
   submit: {
-    marginTop: 40,
+    marginTop: 10,
     backgroundColor: '#F9AA33',
   },
   button: {
