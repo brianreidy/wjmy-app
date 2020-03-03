@@ -18,20 +18,19 @@ let mag = {};
 let gps = {};
 let coordsArr = [];
 
-const toggleMeasurements = collect => {
+const toggleMeasurements = isRunning => {
   const magSubscription = magnetometer.subscribe(
     ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
     error => console.log('magnetometer not available'),
   );
-  if (!collect) {
+  if (!isRunning) {
     magSubscription.unsubscribe();
-    return mag;
   }
 };
 
-const submitMeasures = (mag, collect, myRide) => {
+const submitMeasures = (mag, isRunning, myRide) => {
   console.log('submiting to database');
-  if (collect) {
+  if (isRunning) {
     mag = toggleMeasurements(false);
   }
   myRide.doc('magnemometer').set(mag, {merge: true});
@@ -46,7 +45,7 @@ const InRide = ({route}) => {
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
 
-  const [collect, setCollect] = useState(true);
+  const [isRunning, setIsRunning] = useState();
   const [region, setRegion] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
@@ -58,32 +57,30 @@ const InRide = ({route}) => {
     latitude: 0,
     longitude: 0,
   });
+
   useEffect(() => {
-    console.log('using effect)');
     const watchId = Geolocation.watchPosition(
       pos => {
-        setPosition({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        });
-        if (collect) {
+        if (isRunning) {
           gps[pos.timestamp] = pos.coords;
+          coordsArr = [
+            {
+              longitude: pos.coords.longitude,
+              latitude: pos.coords.latitude,
+            },
+            ...coordsArr,
+          ];
+          setPosition({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
         }
-        //console.log(pos.coords)
-        //console.log(pos.timestamp)
         setRegion({
           longitude: pos.coords.longitude,
           latitude: pos.coords.latitude,
           latitudeDelta: 0.00922,
           longitudeDelta: 0.00421,
         });
-        coordsArr = [
-          {
-            longitude: pos.coords.longitude,
-            latitude: pos.coords.latitude,
-          },
-          ...coordsArr,
-        ];
       },
       e => console.log(e.message),
       {
@@ -93,14 +90,14 @@ const InRide = ({route}) => {
         distanceFilter: 0.1,
       },
     );
-    console.log(watchId);
-    return () => Geolocation.clearWatch(watchId), console.log('done');
-  }, []);
-  //Geolocation.clearWatch(watchId)
-  // return () => ;
-  //}, []);
+    return () => Geolocation.clearWatch(watchId);
+  }, [isRunning]);
 
-  // console.log('location map', coordsArr);
+  const playPause = () => {
+    toggleMeasurements(isRunning, myRide);
+    setIsRunning(!isRunning);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <MapView style={styles.map} region={region}>
@@ -120,33 +117,22 @@ const InRide = ({route}) => {
       </MapView>
 
       <View style={styles.buttonContainer}>
-        <Text style={styles.instructions}>
-          long: {position.latitude}
-          {'\n'}
-          lat: {position.longitude}
-        </Text>
         <TouchableOpacity
-          onPress={() => {
-            toggleMeasurements(collect, myRide);
-            setCollect(!collect);
-          }}
+          onPress={playPause}
           style={[
             styles.button,
-            collect === true ? styles.clickedButton : styles.unClickedButton,
+            isRunning === true ? styles.clickedButton : styles.unClickedButton,
           ]}>
-          <Text
-            style={
-              collect === true ? styles.clickedText : styles.unClickedText
-            }>
-            {collect === true ? 'start ride' : 'pause ride'}
+          <Text style={styles.text}>
+            {isRunning === true ? 'pause ride' : 'start ride'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
-            submitMeasures(mag, collect, myRide);
+            submitMeasures(mag, isRunning, myRide);
           }}>
-          <Text>Send ride data to database</Text>
+          <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -161,21 +147,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
+    position: 'absolute',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    paddingHorizontal: 30,
+    alignSelf: 'center',
+    bottom: 50,
   },
-  clickedText: {
+  text: {
     color: Colors.white,
   },
-  unClickedText: {
-    color: Colors.black,
-  },
   clickedButton: {
-    backgroundColor: '#4A6572',
+    backgroundColor: '#72574a',
   },
   unClickedButton: {
-    backgroundColor: Colors.lighter,
+    backgroundColor: '#4A6572',
   },
   submit: {
     marginTop: 10,
@@ -183,7 +168,7 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: 30,
     paddingVertical: 20,
     marginVertical: 5,
     borderRadius: 8,
