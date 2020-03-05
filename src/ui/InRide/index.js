@@ -99,7 +99,7 @@ const InRide = ({route}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <MapView style={styles.map} region={region}>
         <Polyline
           coordinates={coordsArr}
@@ -135,7 +135,7 @@ const InRide = ({route}) => {
           <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
     bottom: 50,
   },
   text: {
+    fontSize: 15,
     color: Colors.white,
   },
   clickedButton: {
