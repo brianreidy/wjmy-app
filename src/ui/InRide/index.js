@@ -38,7 +38,11 @@ const submitMeasures = (mag, isRunning, myRide) => {
 };
 
 const InRide = ({route}) => {
-  const {myRide} = route.params;
+  const {name, level} = route.params;
+  const [myRide, setRide] = useState();
+  useEffect(() => {
+    setRide(setUpUser(name, level));
+  }, [name, level]);
 
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
