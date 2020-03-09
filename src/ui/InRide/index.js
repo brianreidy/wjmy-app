@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
 import MapView, {Polyline} from 'react-native-maps';
+import Voice from 'react-native-voice';
+
 import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
 
@@ -57,6 +59,123 @@ const InRide = ({route}) => {
     latitude: 0,
     longitude: 0,
   });
+
+  const [voiceState, setVoice] = useState({
+      pitch: '',
+      error: '',
+      started: '',
+      results: [],
+      partialResults: [],
+      end: '',
+  })
+  Voice.onSpeechStart = e => {
+    //Invoked when .start() is called without error
+    console.log("I heard a voice")
+    console.log('onSpeechStart: ', e);
+    setVoice({
+      started: '√',
+    });
+  };
+
+  Voice.onSpeechEnd = e => {
+    //Invoked when SpeechRecognizer stops recognition
+    console.log('onSpeechEnd: ', e);
+    setVoice({
+      end: '√',
+    });
+  };
+
+  Voice.onSpeechError = e => {
+    //Invoked when an error occurs. 
+    console.log('onSpeechError: ', e);
+    setVoice({
+      error: JSON.stringify(e.error),
+    });
+  };
+
+  Voice.onSpeechResults = e => {
+    //Invoked when SpeechRecognizer is finished recognizing
+    console.log('onSpeechResults: ', e);
+    setVoice({
+      results: e.value,
+    });
+  };
+
+  Voice._onSpeechRecognized = e => {
+    //Invoked when any results are computed
+    console.log('onSpeechPartialResults: ', e);
+    setVoice({
+      partialResults: e.value,
+    });
+  };
+
+  onSpeechVolumeChanged = e => {
+    //Invoked when pitch that is recognized changed
+    console.log('onSpeechVolumeChanged: ', e);
+    setVoice({
+      pitch: e.value,
+    });
+  };
+
+  _startRecognizing = async () => {
+    //Starts listening for speech for a specific locale
+    
+    setVoice({
+      pitch: '',
+      error: '',
+      started: '',
+      results: [],
+      partialResults: [],
+      end: '',
+    });
+
+    try {
+      await Voice.start('en-US');
+      console.log("compltednwaitt")
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+  };
+
+  _stopRecognizing = async () => {
+    //Stops listening for speech
+    try {
+      await Voice.stop();
+      console.log("Stoped")
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+  };
+
+  _cancelRecognizing = async () => {
+    //Cancels the speech recognition
+    try {
+      await Voice.cancel();
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+  };
+
+  _destroyRecognizer = async () => {
+    //Destroys the current SpeechRecognizer instance
+    try {
+      await Voice.destroy();
+    } catch (e) {
+      //eslint-disable-next-line
+      console.error(e);
+    }
+    setVoice({
+      pitch: '',
+      error: '',
+      started: '',
+      results: [],
+      partialResults: [],
+      end: '',
+    });
+  };
 
   useEffect(() => {
     const watchId = Geolocation.watchPosition(
@@ -127,6 +246,26 @@ const InRide = ({route}) => {
             {isRunning === true ? 'pause ride' : 'start ride'}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+            onPress={()=>{_startRecognizing()}}
+            style={[
+              styles.button,
+              isRunning === true ? styles.clickedButton : styles.unClickedButton,
+            ]}>
+            <Text style={styles.text}>
+              Microphone
+          </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={()=>{_stopRecognizing()}}
+            style={[
+              styles.button,
+              isRunning === true ? styles.clickedButton : styles.unClickedButton,
+            ]}>
+            <Text style={styles.text}>
+              stop mic
+          </Text>
+          </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
