@@ -33,7 +33,6 @@ import {
   setUpdateIntervalForType,
 } from 'react-native-sensors';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import setUpUser from '../../arch/setUpUser';
 
 async function requestLocationPermission() {
   if (Platform === 'android') {
@@ -64,8 +63,7 @@ async function requestLocationPermission() {
 // let batch = db.batch();
 const submit = (name, level, navigate) => {
   if (name && level >= 0) {
-    const myRide = setUpUser(name, level);
-    navigate('InRide', {myRide: myRide});
+    navigate('InRide', {name: name, level: level});
   }
 };
 
