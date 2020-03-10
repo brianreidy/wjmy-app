@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
-import MapView, {Polyline} from 'react-native-maps';
+import MapView, {Polyline, Marker} from 'react-native-maps';
 import Voice from 'react-native-voice';
 
 import setUpUser from '../../arch/setUpUser';
@@ -19,8 +19,9 @@ import Geolocation from '@react-native-community/geolocation';
 let mag = {};
 let gps = {};
 let coordsArr = [];
+let myMarkers = [];
 
-const toggleMeasurements = isRunning => {
+const toggleMeasurements = (isRunning, voiceRunning) => {
   const magSubscription = magnetometer.subscribe(
     ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
     error => console.log('magnetometer not available'),
@@ -28,6 +29,11 @@ const toggleMeasurements = isRunning => {
   if (!isRunning) {
     magSubscription.unsubscribe();
   }
+  // if (voiceRunning) {
+  //   _startRecognizing();
+  // } else {
+  //   _stopRecognizing()
+  // }
 };
 
 const submitMeasures = (mag, isRunning, myRide) => {
@@ -41,7 +47,7 @@ const submitMeasures = (mag, isRunning, myRide) => {
 
 const InRide = ({route}) => {
   const {myRide} = route.params;
-
+  console.log(myMarkers)
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
@@ -60,75 +66,35 @@ const InRide = ({route}) => {
     longitude: 0,
   });
 
-  const [voiceState, setVoice] = useState({
-      pitch: '',
-      error: '',
-      started: '',
-      results: [],
-      partialResults: [],
-      end: '',
-  })
+  const [voiceRunning, setVoice] = useState(false)
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
-    console.log("I heard a voice")
-    console.log('onSpeechStart: ', e);
-    setVoice({
-      started: '√',
-    });
+    console.log("Speech Starting")
   };
 
   Voice.onSpeechEnd = e => {
     //Invoked when SpeechRecognizer stops recognition
-    console.log('onSpeechEnd: ', e);
-    setVoice({
-      end: '√',
-    });
+    console.log('Speech End', e);
   };
 
   Voice.onSpeechError = e => {
     //Invoked when an error occurs. 
     console.log('onSpeechError: ', e);
-    setVoice({
-      error: JSON.stringify(e.error),
-    });
   };
 
   Voice.onSpeechResults = e => {
-    //Invoked when SpeechRecognizer is finished recognizing
-    console.log('onSpeechResults: ', e);
-    setVoice({
-      results: e.value,
-    });
-  };
-
-  Voice._onSpeechRecognized = e => {
-    //Invoked when any results are computed
-    console.log('onSpeechPartialResults: ', e);
-    setVoice({
-      partialResults: e.value,
-    });
-  };
-
-  onSpeechVolumeChanged = e => {
-    //Invoked when pitch that is recognized changed
-    console.log('onSpeechVolumeChanged: ', e);
-    setVoice({
-      pitch: e.value,
-    });
-  };
+    console.log("Results: ")
+    let myMemo = {
+      "coordinate": {latitude: position.latitude, longitude:position.longitude},
+      "timestamp": String(new Date().getTime()),
+      "memo" : JSON.stringify(e.value),
+    }
+    myMarkers.push(myMemo)
+    console.log(myMemo)
+  }
 
   _startRecognizing = async () => {
     //Starts listening for speech for a specific locale
-    
-    setVoice({
-      pitch: '',
-      error: '',
-      started: '',
-      results: [],
-      partialResults: [],
-      end: '',
-    });
-
     try {
       await Voice.start('en-US');
       console.log("compltednwaitt")
@@ -142,40 +108,32 @@ const InRide = ({route}) => {
     //Stops listening for speech
     try {
       await Voice.stop();
-      console.log("Stoped")
+      console.log("Stopped")
     } catch (e) {
       //eslint-disable-next-line
       console.error(e);
     }
   };
 
-  _cancelRecognizing = async () => {
-    //Cancels the speech recognition
-    try {
-      await Voice.cancel();
-    } catch (e) {
-      //eslint-disable-next-line
-      console.error(e);
-    }
-  };
+  // _cancelRecognizing = async () => {
+  //   //Cancels the speech recognition
+  //   try {
+  //     await Voice.cancel();
+  //   } catch (e) {
+  //     //eslint-disable-next-line
+  //     console.error(e);
+  //   }
+  // };
 
-  _destroyRecognizer = async () => {
-    //Destroys the current SpeechRecognizer instance
-    try {
-      await Voice.destroy();
-    } catch (e) {
-      //eslint-disable-next-line
-      console.error(e);
-    }
-    setVoice({
-      pitch: '',
-      error: '',
-      started: '',
-      results: [],
-      partialResults: [],
-      end: '',
-    });
-  };
+  // _destroyRecognizer = async () => {
+  //   //Destroys the current SpeechRecognizer instance
+  //   try {
+  //     await Voice.destroy();
+  //   } catch (e) {
+  //     //eslint-disable-next-line
+  //     console.error(e);
+  //   }
+  // };
 
   useEffect(() => {
     const watchId = Geolocation.watchPosition(
@@ -213,13 +171,25 @@ const InRide = ({route}) => {
   }, [isRunning]);
 
   const playPause = () => {
-    toggleMeasurements(isRunning, myRide);
+    toggleMeasurements(isRunning, voiceRunning, myRide);
     setIsRunning(!isRunning);
+    //setVoice(!voiceRunning);
+  };
+  const playPauseVoice = () => {
+    if (!voiceRunning) {
+      _startRecognizing();
+      setVoice(true)
+    } else {
+      _stopRecognizing();
+      setVoice(false)
+    }
+
+    
   };
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} region={region}>
+      <MapView style={styles.map} region={region}> 
         <Polyline
           coordinates={coordsArr}
           strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
@@ -233,7 +203,15 @@ const InRide = ({route}) => {
           // ]}
           strokeWidth={6}
         />
+        {myMarkers.map(marker => (
+          <Marker
+            coordinate={marker.coordinate}
+            title={marker.memo}
+            description={marker.timestamp}
+          />
+        ))}
       </MapView>
+      
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -247,25 +225,15 @@ const InRide = ({route}) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-            onPress={()=>{_startRecognizing()}}
-            style={[
-              styles.button,
-              isRunning === true ? styles.clickedButton : styles.unClickedButton,
-            ]}>
-            <Text style={styles.text}>
-              Microphone
+          onPress={playPauseVoice}
+          style={[
+            styles.button,
+            voiceRunning === true ? styles.clickedButton : styles.unClickedButton,
+          ]}>
+          <Text style={styles.text}>
+            {voiceRunning === true ? 'Stop Voice Recording' : 'Start Voice Recording'}
           </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={()=>{_stopRecognizing()}}
-            style={[
-              styles.button,
-              isRunning === true ? styles.clickedButton : styles.unClickedButton,
-            ]}>
-            <Text style={styles.text}>
-              stop mic
-          </Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
