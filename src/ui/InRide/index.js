@@ -26,14 +26,15 @@ const toggleMeasurements = (isRunning, voiceRunning) => {
     ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
     error => console.log('magnetometer not available'),
   );
+  if (voiceRunning) {
+    _startRecognizing();
+  } else {
+    _stopRecognizing();
+  }
   if (!isRunning) {
     magSubscription.unsubscribe();
+    _stopRecognizing();
   }
-  // if (voiceRunning) {
-  //   _startRecognizing();
-  // } else {
-  //   _stopRecognizing()
-  // }
 };
 
 const submitMeasures = (mag, isRunning, myRide) => {
@@ -43,6 +44,7 @@ const submitMeasures = (mag, isRunning, myRide) => {
   }
   myRide.doc('magnemometer').set(mag, {merge: true});
   myRide.doc('gps').set(gps, {merge: true});
+  myRide.doc('voice').set(myMarkers, {merge: true});
 };
 
 const InRide = ({route}) => {
@@ -66,7 +68,7 @@ const InRide = ({route}) => {
     longitude: 0,
   });
 
-  const [voiceRunning, setVoice] = useState(false)
+  const [voiceRunning, setVoice] = useState(true)
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
     console.log("Speech Starting")
@@ -89,7 +91,10 @@ const InRide = ({route}) => {
       "timestamp": String(new Date().getTime()),
       "memo" : JSON.stringify(e.value),
     }
-    myMarkers.push(myMemo)
+    if (isRunning) {
+      myMarkers.push(myMemo)
+    }
+    
     console.log(myMemo)
   }
 
@@ -176,14 +181,15 @@ const InRide = ({route}) => {
     //setVoice(!voiceRunning);
   };
   const playPauseVoice = () => {
+    
     if (!voiceRunning) {
-      _startRecognizing();
       setVoice(true)
+      _startRecognizing()
     } else {
-      _stopRecognizing();
       setVoice(false)
+      _stopRecognizing()
     }
-
+    console.log(voiceRunning)
     
   };
 
@@ -231,7 +237,7 @@ const InRide = ({route}) => {
             voiceRunning === true ? styles.clickedButton : styles.unClickedButton,
           ]}>
           <Text style={styles.text}>
-            {voiceRunning === true ? 'Stop Voice Recording' : 'Start Voice Recording'}
+            {voiceRunning === true ? 'Turn Voice Recording Off' : 'Turn Voice Recording On'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
