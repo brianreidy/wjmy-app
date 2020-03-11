@@ -14,16 +14,17 @@ import {
   View,
   Text,
   StatusBar,
-  Button,
+  Alert,
   TouchableOpacity,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import setUpUser from '../../arch/setUpUser';
+import getFitbitData from './getFitbitData';
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
-const submitMeasures = (gps, mag, myRide) => {
+const submitMeasures = (gps, mag, fitbit, myRide) => {
   myRide.doc('magnemometer').set(mag, {merge: true});
   myRide.doc('gps').set(gps, {merge: true});
 };
@@ -31,6 +32,7 @@ const submitMeasures = (gps, mag, myRide) => {
 const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   const {name, level, mag, gps} = route.params;
   const [myRide, setRide] = useState();
+  const [fitbit, setFitbit] = useState();
 
   useEffect(() => {
     setRide(setUpUser(name, level));
@@ -39,6 +41,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
+  console.log('im hur ', fitbit);
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -118,13 +121,14 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
             </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Go to Fitbit</Text>
-              <Button
-                title="Get Data From Fibit"
-                onPress={() => navigate('Fitbit')}
-              />
+              <TouchableOpacity
+                style={[styles.button, styles.clickedButton]}
+                onPress={() => getFitbitData(setFitbit)}>
+                <Text style={styles.clickedText}>Get Data From Fibit</Text>
+              </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => submitMeasures(gps, mag, myRide)}
+              onPress={() => submitMeasures(gps, mag, fitbit, myRide)}
               style={[styles.button, styles.submit]}>
               <Text>Submit</Text>
             </TouchableOpacity>

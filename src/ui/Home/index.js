@@ -156,13 +156,6 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                 <Text>Submit</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Go to Fitbit</Text>
-              <Button
-                title="Test the Fibit API"
-                onPress={() => navigate('Fitbit')}
-              />
-            </View>
           </View>
         </ScrollView>
       </SafeAreaView>

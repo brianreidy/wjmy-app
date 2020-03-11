@@ -1,17 +1,20 @@
-import React, {Component} from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, Text, View, Linking} from 'react-native';
 import qs from 'qs';
 import config from '../../../config.js';
-function OAuth(client_id, cb) {
+
+let heartRate;
+
+function OAuth(client_id, cb, setFitbit) {
   Linking.addEventListener('url', handleUrl);
   function handleUrl(event) {
-    console.log(event.url);
+    // console.log(event.url);
     Linking.removeEventListener('url', handleUrl);
     const [, query_string] = event.url.match(/\#(.*)/);
-    console.log(query_string);
+    // console.log(query_string);
     const query = qs.parse(query_string);
-    console.log(`query: ${JSON.stringify(query)}`);
-    cb(query.access_token);
+    // console.log(`query: ${JSON.stringify(query)}`);
+    cb(query.access_token, setFitbit);
   }
   const oauthurl = `https://www.fitbit.com/oauth2/authorize?${qs.stringify({
     client_id,
@@ -20,13 +23,12 @@ function OAuth(client_id, cb) {
     redirect_uri: 'wjmy://',
     expires_in: '31536000',
   })}`;
-  console.log(oauthurl);
+  // console.log(oauthurl);
   Linking.openURL(oauthurl).catch(err =>
     console.error('Error processing linking', err),
   );
 }
-
-function getData(access_token) {
+function getData(access_token, setFitbit) {
   fetch('https://api.fitbit.com/1/user/-/activities/heart/date/today/1d.json', {
     method: 'GET',
     headers: {
@@ -36,37 +38,14 @@ function getData(access_token) {
   })
     .then(res => res.json())
     .then(res => {
-      console.log(`res: ${JSON.stringify(res)}`);
+      setFitbit(`res: ${JSON.stringify(res)}`);
     })
     .catch(err => {
       console.error('Error: ', err);
     });
 }
-export default class App extends Component {
-  componentDidMount() {
-    OAuth(config.client_id, getData);
-  }
+const getFitbitData = setFitbit => {
+  OAuth(config.client_id, getData, setFitbit);
+};
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to Fitbit Integration</Text>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#00a8b5',
-  },
-  welcome: {
-    fontSize: 25,
-    textAlign: 'center',
-    color: '#fff',
-    margin: 10,
-  },
-});
+export default getFitbitData;
