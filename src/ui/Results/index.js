@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -14,67 +14,57 @@ import {
   View,
   Text,
   StatusBar,
-  Button,
-  Image,
-  PermissionsAndroid,
-  Platform,
+  Alert,
+  TouchableOpacity,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import setUpUser from '../../arch/setUpUser';
+import getFitbitData from './getFitbitData';
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
-
-import UserInput from './UserInput';
-
-import {
-  magnetometer,
-  SensorTypes,
-  setUpdateIntervalForType,
-} from 'react-native-sensors';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-
-async function requestLocationPermission() {
-  if (Platform === 'android') {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+const submitMeasures = (gps, mag, heartRate, myRide) => {
+  if (heartRate == null) {
+    Alert.alert(
+      'Fitbit data not gathered',
+      'Do you want to send to the database anyway',
+      [
         {
-          title: 'we just met yesterday requires fine location',
-          message:
-            'wjmy requires fine location to ' +
-            'see where our riders are stressed.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
+          text: "Don't Send",
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
         },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use location');
-      } else {
-        console.log('location permission denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
-  }
-}
-
-// let batch = db.batch();
-const submit = (name, level, navigate) => {
-  if (name && level >= 0) {
-    navigate('InRide', {name: name, level: level});
+        {
+          text: 'SEND',
+          onPress: () => {
+            myRide.doc('magnemometer').set(mag, {merge: true});
+            myRide.doc('gps').set(gps, {merge: true});
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  } else {
+    myRide.doc('magnemometer').set(mag, {merge: true});
+    myRide.doc('gps').set(gps, {merge: true});
+    myRide.doc('heartrate').set(heartRate, {merge: true});
   }
 };
 
-const Home: () => React$Node = ({navigation: {navigate}}) => {
-  setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
-  const [name, setName] = useState();
-  const [level, setLevel] = useState(-1);
+const Results: () => React$Node = ({route, navigation: {navigate}}) => {
+  const {name, level, mag, gps} = route.params;
+  const [myRide, setRide] = useState();
+  const [heartRate, setHeartRate] = useState();
+
+  useEffect(() => {
+    setRide(setUpUser(name, level));
+  }, [name, level]);
+
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
-  requestLocationPermission();
+  console.log('im hur ', heartRate);
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -82,11 +72,6 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
-          <Image
-            style={styles.image}
-            source={require('./bikeSplash.jpg')}
-            overflow={'visible'}
-          />
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
               <Text style={styles.footer}>Engine: Hermes</Text>
@@ -94,12 +79,12 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Rider Setup</Text>
-              <Text style={styles.highlight}>Name </Text>
-              <UserInput text={name} setText={setName} />
-              <Text style={styles.highlight}>Rider Level </Text>
+              <Text style={styles.sectionTitle}>Questions</Text>
+              <Text style={styles.highlight}>
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa
+                qui officia deserunt mollit anim id est laborum."
+              </Text>
               <TouchableOpacity
-                onPress={() => setLevel(0)}
                 style={[
                   styles.button,
                   level === 0 ? styles.clickedButton : styles.unClickedButton,
@@ -108,11 +93,10 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 0 ? styles.clickedText : styles.unClickedText
                   }>
-                  Interested, but Concerned
+                  Lorem ipsum dolor sit
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(1)}
                 style={[
                   styles.button,
                   level === 1 ? styles.clickedButton : styles.unClickedButton,
@@ -121,11 +105,10 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 1 ? styles.clickedText : styles.unClickedText
                   }>
-                  Comfortable, but Cautious
+                  consectetur adipiscing elit
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(2)}
                 style={[
                   styles.button,
                   level === 2 ? styles.clickedButton : styles.unClickedButton,
@@ -134,11 +117,10 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 2 ? styles.clickedText : styles.unClickedText
                   }>
-                  Enthused & Confident
+                  sed do eiusmod tempor incididunt
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(3)}
                 style={[
                   styles.button,
                   level === 3 ? styles.clickedButton : styles.unClickedButton,
@@ -147,15 +129,23 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   style={
                     level === 3 ? styles.clickedText : styles.unClickedText
                   }>
-                  Strong & Fearless
+                  Ut enim ad minim veniam, quis
                 </Text>
               </TouchableOpacity>
+            </View>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Go to Fitbit</Text>
               <TouchableOpacity
-                style={[styles.button, styles.submit]}
-                onPress={() => submit(name, level, navigate)}>
-                <Text>Submit</Text>
+                style={[styles.button, styles.clickedButton]}
+                onPress={() => getFitbitData(setHeartRate)}>
+                <Text style={styles.clickedText}>Get Data From Fibit</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              onPress={() => submitMeasures(gps, mag, heartRate, myRide)}
+              style={[styles.button, styles.submit]}>
+              <Text>Submit</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -224,4 +214,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Home;
+export default Results;

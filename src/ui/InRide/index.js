@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
 import MapView, {Polyline} from 'react-native-maps';
-import setUpUser from '../../arch/setUpUser';
 import writeData from '../../arch/writeData';
 
 import {
@@ -28,21 +27,8 @@ const toggleMeasurements = isRunning => {
   }
 };
 
-const submitMeasures = (mag, isRunning, myRide) => {
-  console.log('submiting to database');
-  if (isRunning) {
-    mag = toggleMeasurements(false);
-  }
-  myRide.doc('magnemometer').set(mag, {merge: true});
-  myRide.doc('gps').set(gps, {merge: true});
-};
-
-const InRide = ({route}) => {
+const InRide = ({route, navigation: {navigate}}) => {
   const {name, level} = route.params;
-  const [myRide, setRide] = useState();
-  useEffect(() => {
-    setRide(setUpUser(name, level));
-  }, [name, level]);
 
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
@@ -55,11 +41,6 @@ const InRide = ({route}) => {
     longitude: -122.4324,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
-  });
-  // const [error, setError] = useState("");
-  const [position, setPosition] = useState({
-    latitude: 0,
-    longitude: 0,
   });
 
   useEffect(() => {
@@ -74,10 +55,6 @@ const InRide = ({route}) => {
             },
             ...coordsArr,
           ];
-          setPosition({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
         }
         setRegion({
           longitude: pos.coords.longitude,
@@ -96,11 +73,6 @@ const InRide = ({route}) => {
     );
     return () => Geolocation.clearWatch(watchId);
   }, [isRunning]);
-
-  const playPause = () => {
-    toggleMeasurements(isRunning, myRide);
-    setIsRunning(!isRunning);
-  };
 
   return (
     <View style={styles.container}>
@@ -122,7 +94,7 @@ const InRide = ({route}) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={playPause}
+          onPress={() => setIsRunning(!isRunning)}
           style={[
             styles.button,
             isRunning === true ? styles.clickedButton : styles.unClickedButton,
@@ -134,7 +106,10 @@ const InRide = ({route}) => {
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
-            submitMeasures(mag, isRunning, myRide);
+            if (isRunning) {
+              mag = toggleMeasurements(false);
+            }
+            navigate('Results', {name: name, level: level, mag: mag, gps: gps});
           }}>
           <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>
