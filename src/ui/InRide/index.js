@@ -19,6 +19,7 @@ import Geolocation from '@react-native-community/geolocation';
 let mag = {};
 let gps = {};
 let coordsArr = [];
+let voice = {};
 let myMarkers = [];
 
 const toggleMeasurements = (isRunning, voiceRunning) => {
@@ -49,7 +50,7 @@ const submitMeasures = (mag, isRunning, myRide) => {
 
 const InRide = ({route}) => {
   const {myRide} = route.params;
-  console.log(myMarkers)
+  console.log(mag)
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
@@ -71,12 +72,12 @@ const InRide = ({route}) => {
   const [voiceRunning, setVoice] = useState(true)
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
-    console.log("Speech Starting")
+    //console.log("Speech Starting")
   };
 
   Voice.onSpeechEnd = e => {
     //Invoked when SpeechRecognizer stops recognition
-    console.log('Speech End', e);
+    //console.log('Speech End', e);
   };
 
   Voice.onSpeechError = e => {
@@ -91,6 +92,7 @@ const InRide = ({route}) => {
       "timestamp": String(new Date().getTime()),
       "memo" : JSON.stringify(e.value),
     }
+    voice[String(new Date().getTime())] = myMemo;
     if (isRunning) {
       myMarkers.push(myMemo)
     }
@@ -102,7 +104,7 @@ const InRide = ({route}) => {
     //Starts listening for speech for a specific locale
     try {
       await Voice.start('en-US');
-      console.log("compltednwaitt")
+      //console.log("compltednwaitt")
     } catch (e) {
       //eslint-disable-next-line
       console.error(e);
@@ -113,7 +115,7 @@ const InRide = ({route}) => {
     //Stops listening for speech
     try {
       await Voice.stop();
-      console.log("Stopped")
+      //console.log("Stopped")
     } catch (e) {
       //eslint-disable-next-line
       console.error(e);
@@ -143,6 +145,7 @@ const InRide = ({route}) => {
   useEffect(() => {
     const watchId = Geolocation.watchPosition(
       pos => {
+        //console.log(pos)
         if (isRunning) {
           gps[pos.timestamp] = pos.coords;
           coordsArr = [
