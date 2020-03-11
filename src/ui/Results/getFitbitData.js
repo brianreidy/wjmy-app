@@ -3,8 +3,6 @@ import {StyleSheet, Text, View, Linking} from 'react-native';
 import qs from 'qs';
 import config from '../../../config.js';
 
-let heartRate;
-
 function OAuth(client_id, cb, setFitbit) {
   Linking.addEventListener('url', handleUrl);
   function handleUrl(event) {
@@ -38,7 +36,7 @@ function getData(access_token, setFitbit) {
   })
     .then(res => res.json())
     .then(res => {
-      setFitbit(`res: ${JSON.stringify(res)}`);
+      setFitbit(res);
     })
     .catch(err => {
       console.error('Error: ', err);

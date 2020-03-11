@@ -24,15 +24,38 @@ import getFitbitData from './getFitbitData';
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
-const submitMeasures = (gps, mag, fitbit, myRide) => {
-  myRide.doc('magnemometer').set(mag, {merge: true});
-  myRide.doc('gps').set(gps, {merge: true});
+const submitMeasures = (gps, mag, heartRate, myRide) => {
+  if (heartRate == null) {
+    Alert.alert(
+      'Fitbit data not gathered',
+      'Do you want to send to the database anyway',
+      [
+        {
+          text: "Don't Send",
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {
+          text: 'SEND',
+          onPress: () => {
+            myRide.doc('magnemometer').set(mag, {merge: true});
+            myRide.doc('gps').set(gps, {merge: true});
+          },
+        },
+      ],
+      {cancelable: false},
+    );
+  } else {
+    myRide.doc('magnemometer').set(mag, {merge: true});
+    myRide.doc('gps').set(gps, {merge: true});
+    myRide.doc('heartrate').set(heartRate, {merge: true});
+  }
 };
 
 const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   const {name, level, mag, gps} = route.params;
   const [myRide, setRide] = useState();
-  const [fitbit, setFitbit] = useState();
+  const [heartRate, setHeartRate] = useState();
 
   useEffect(() => {
     setRide(setUpUser(name, level));
@@ -41,7 +64,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
   //   console.log({x, y, z, timestamp}),
   // );
-  console.log('im hur ', fitbit);
+  console.log('im hur ', heartRate);
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -49,11 +72,6 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
-          {/* <Image
-            style={styles.image}
-            source={require('./bikeSplash.jpg')}
-            overflow={'visible'}
-          /> */}
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
               <Text style={styles.footer}>Engine: Hermes</Text>
@@ -67,7 +85,6 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
                 qui officia deserunt mollit anim id est laborum."
               </Text>
               <TouchableOpacity
-                onPress={() => setLevel(0)}
                 style={[
                   styles.button,
                   level === 0 ? styles.clickedButton : styles.unClickedButton,
@@ -80,7 +97,6 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(1)}
                 style={[
                   styles.button,
                   level === 1 ? styles.clickedButton : styles.unClickedButton,
@@ -93,7 +109,6 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(2)}
                 style={[
                   styles.button,
                   level === 2 ? styles.clickedButton : styles.unClickedButton,
@@ -106,7 +121,6 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setLevel(3)}
                 style={[
                   styles.button,
                   level === 3 ? styles.clickedButton : styles.unClickedButton,
@@ -123,12 +137,12 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
               <Text style={styles.sectionTitle}>Go to Fitbit</Text>
               <TouchableOpacity
                 style={[styles.button, styles.clickedButton]}
-                onPress={() => getFitbitData(setFitbit)}>
+                onPress={() => getFitbitData(setHeartRate)}>
                 <Text style={styles.clickedText}>Get Data From Fibit</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => submitMeasures(gps, mag, fitbit, myRide)}
+              onPress={() => submitMeasures(gps, mag, heartRate, myRide)}
               style={[styles.button, styles.submit]}>
               <Text>Submit</Text>
             </TouchableOpacity>
