@@ -50,7 +50,7 @@ const submitMeasures = (mag, isRunning, myRide) => {
 
 const InRide = ({route}) => {
   const {myRide} = route.params;
-  console.log(mag)
+  console.log(mag);
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
@@ -69,7 +69,7 @@ const InRide = ({route}) => {
     longitude: 0,
   });
 
-  const [voiceRunning, setVoice] = useState(true)
+  const [voiceRunning, setVoice] = useState(true);
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
     //console.log("Speech Starting")
@@ -81,24 +81,24 @@ const InRide = ({route}) => {
   };
 
   Voice.onSpeechError = e => {
-    //Invoked when an error occurs. 
+    //Invoked when an error occurs.
     console.log('onSpeechError: ', e);
   };
 
   Voice.onSpeechResults = e => {
-    console.log("Results: ")
+    console.log('Results: ');
     let myMemo = {
-      "coordinate": {latitude: position.latitude, longitude:position.longitude},
-      "timestamp": String(new Date().getTime()),
-      "memo" : JSON.stringify(e.value),
-    }
+      coordinate: {latitude: position.latitude, longitude: position.longitude},
+      timestamp: String(new Date().getTime()),
+      memo: JSON.stringify(e.value),
+    };
     voice[String(new Date().getTime())] = myMemo;
     if (isRunning) {
-      myMarkers.push(myMemo)
+      myMarkers.push(myMemo);
     }
-    
-    console.log(myMemo)
-  }
+
+    console.log(myMemo);
+  };
 
   _startRecognizing = async () => {
     //Starts listening for speech for a specific locale
@@ -184,21 +184,30 @@ const InRide = ({route}) => {
     //setVoice(!voiceRunning);
   };
   const playPauseVoice = () => {
-    
     if (!voiceRunning) {
-      setVoice(true)
-      _startRecognizing()
+      setVoice(true);
+      _startRecognizing();
     } else {
-      setVoice(false)
-      _stopRecognizing()
+      setVoice(false);
+      _stopRecognizing();
     }
-    console.log(voiceRunning)
-    
+    console.log(voiceRunning);
   };
-
+  const [accx, setAccx] = useState();
+  const [accy, setAccy] = useState();
+  const [accz, setAccz] = useState();
+  setInterval(function() {
+    setAccx(Math.floor(Math.random() * 100000 + 1) / 10000);
+  }, 10000);
+  setInterval(function() {
+    setAccy(Math.floor(Math.random() * 100000 + 1) / 10000);
+  }, 10000);
+  setInterval(function() {
+    setAccz(Math.floor(Math.random() * 100000 + 1) / 10000);
+  }, 10000);
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} region={region}> 
+      <MapView style={styles.map} region={region}>
         <Polyline
           coordinates={coordsArr}
           strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
@@ -220,9 +229,17 @@ const InRide = ({route}) => {
           />
         ))}
       </MapView>
-      
 
       <View style={styles.buttonContainer}>
+        <View
+          style={[
+            styles.button,
+            isRunning === true ? styles.clickedButton : styles.unClickedButton,
+          ]}>
+          <Text style={styles.text}>
+            {'acc:' + ' x ' + accx + ' y ' + accy + ' z ' + accz}
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={playPause}
           style={[
@@ -237,10 +254,14 @@ const InRide = ({route}) => {
           onPress={playPauseVoice}
           style={[
             styles.button,
-            voiceRunning === true ? styles.clickedButton : styles.unClickedButton,
+            voiceRunning === true
+              ? styles.clickedButton
+              : styles.unClickedButton,
           ]}>
           <Text style={styles.text}>
-            {voiceRunning === true ? 'Turn Voice Recording Off' : 'Turn Voice Recording On'}
+            {voiceRunning === true
+              ? 'Turn Voice Recording Off'
+              : 'Turn Voice Recording On'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
