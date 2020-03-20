@@ -18,6 +18,7 @@
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* wjmyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* wjmyTests.m */; };
+		329CFD3E2424448B000C8440 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 329CFD3D2424448B000C8440 /* File.swift */; };
 		527CCB992B656F1537A07776 /* libPods-wjmy-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 09FA314525585EC1C5FB2C6C /* libPods-wjmy-tvOSTests.a */; };
 		7D9DC15EA9EF017F7915B08E /* libPods-wjmy-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 264B655C6E6A291494CFECE1 /* libPods-wjmy-tvOS.a */; };
 		C81E9B0123F482D0000F214D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C81E9B0023F482D0000F214D /* GoogleService-Info.plist */; };
@@ -57,6 +58,8 @@
 		264B655C6E6A291494CFECE1 /* libPods-wjmy-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-wjmy-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E47B1E0B4A5D006451C7 /* wjmy-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "wjmy-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* wjmy-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "wjmy-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		329CFD3C2424448A000C8440 /* wjmy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "wjmy-Bridging-Header.h"; sourceTree = "<group>"; };
+		329CFD3D2424448B000C8440 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		3645FA907EC3713159AFA5B9 /* Pods-wjmy-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-wjmy-tvOS.release.xcconfig"; path = "Target Support Files/Pods-wjmy-tvOS/Pods-wjmy-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		52149B6FAB2AF90AF464B5F4 /* libPods-wjmyTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-wjmyTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		74073C1D8083A9616F78521C /* Pods-wjmy-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-wjmy-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-wjmy-tvOSTests/Pods-wjmy-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -161,6 +164,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				329CFD3D2424448B000C8440 /* File.swift */,
 				C81E9B0023F482D0000F214D /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* wjmy */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -168,6 +172,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				F1DBCA71DA4847EB0E889ACA /* Pods */,
+				329CFD3C2424448A000C8440 /* wjmy-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -299,6 +304,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = PCVQSH5B38;
+						LastSwiftMigration = 1110;
 						ProvisioningStyle = Automatic;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
@@ -570,6 +576,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				329CFD3E2424448B000C8440 /* File.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -623,6 +630,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C6054402398622361BA451B6 /* Pods-wjmyTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -646,6 +654,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E17F8F6A199A75691B8420DD /* Pods-wjmyTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = wjmyTests/Info.plist;
@@ -667,6 +676,7 @@
 			baseConfigurationReference = 7C47613721F0D5A3E986051F /* Pods-wjmy.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -682,6 +692,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = wjmy;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "wjmy-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -691,6 +704,7 @@
 			baseConfigurationReference = 9E959C990D28F8E5A6D932A4 /* Pods-wjmy.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -705,6 +719,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = wjmy;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "wjmy-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
