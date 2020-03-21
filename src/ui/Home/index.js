@@ -22,6 +22,7 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
+import {BleManager} from 'react-native-ble-plx';
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
 
@@ -75,6 +76,28 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
   //   console.log({x, y, z, timestamp}),
   // );
   requestLocationPermission();
+
+  const startScanning = () => {
+    const bleManager = new BleManager();
+    bleManager.startDeviceScan(null, null, (error, device) => {
+      if (error) {
+        // Handle error (scanning will be stopped automatically)
+        console.log(error);
+        return;
+      }
+
+      // Check if it is a device you are looking for based on advertisement data
+      // or other criteria.
+      console.log(device.name);
+      if (device.name === 'TI BLE Sensor Tag' || device.name === 'SensorTag') {
+        // Stop scanning as it's not necessary if you are scanning for one device.
+        this.manager.stopDeviceScan();
+
+        // Proceed with connection.
+      }
+    });
+  };
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -149,6 +172,11 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
                   }>
                   Strong & Fearless
                 </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.submit]}
+                onPress={startScanning}>
+                <Text>Start Scanning</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.submit]}
