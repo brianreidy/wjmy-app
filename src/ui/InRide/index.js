@@ -8,6 +8,9 @@ import writeData from '../../arch/writeData';
 
 import {
   magnetometer,
+  accelerometer,
+  gyroscope,
+  barometer,
   SensorTypes,
   setUpdateIntervalForType,
 } from 'react-native-sensors';
@@ -17,23 +20,38 @@ import firestore from '@react-native-firebase/firestore';
 import Geolocation from '@react-native-community/geolocation';
 
 let mag = {};
+let gyro = {};
+let bar = {};
+let acc = {};
 let gps = {};
 let coordsArr = [];
 let voice = {};
 let myMarkers = [];
 
 const toggleMeasurements = (isRunning, voiceRunning) => {
-  const magSubscription = magnetometer.subscribe(
-    ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
-    error => console.log('magnetometer not available'),
-  );
+  // const magSubscription = magnetometer.subscribe(
+  //   ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
+  //   error => console.log('magnetometer not available'),
+  // );
+  // const accSubscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
+  // acc[timestamp]={x:x, y:y, z:z}
+  // );
+  // const gyroSubscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
+  // gyro[timestamp]={x:x, y:y, z:z}
+  // );
+  // const barSubscription = barometer.subscribe(({ pressure }) =>
+  // bar[timestamp]={pressure:pressure}
+  // );
   if (voiceRunning) {
     _startRecognizing();
   } else {
     _stopRecognizing();
   }
   if (!isRunning) {
-    magSubscription.unsubscribe();
+    //magSubscription.unsubscribe();
+    //accSubscription.unsubscribe();
+    //gyroSubscription.unsubscribe();
+    //barSubscription.unsubscribe();
     _stopRecognizing();
   }
 };
@@ -44,8 +62,11 @@ const submitMeasures = (mag, isRunning, myRide) => {
     mag = toggleMeasurements(false);
   }
   myRide.doc('magnemometer').set(mag, {merge: true});
+  myRide.doc('gyroscope').set(gyro, {merge: true});
+  myRide.doc('barometer').set(bar, {merge: true});
+  myRide.doc('accelerometer').set(acc, {merge: true});
   myRide.doc('gps').set(gps, {merge: true});
-  myRide.doc('voice').set(myMarkers, {merge: true});
+  myRide.doc('voice').set(voice, {merge: true});
 };
 
 const InRide = ({route}) => {
