@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -77,26 +77,33 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
   // );
   requestLocationPermission();
 
-  const startScanning = () => {
-    const bleManager = new BleManager();
-    bleManager.startDeviceScan(null, null, (error, device) => {
-      if (error) {
-        // Handle error (scanning will be stopped automatically)
-        console.log(error);
-        return;
-      }
+  // const bleManager = new BleManager();
 
-      // Check if it is a device you are looking for based on advertisement data
-      // or other criteria.
-      console.log(device.name);
-      if (device.name === 'TI BLE Sensor Tag' || device.name === 'SensorTag') {
-        // Stop scanning as it's not necessary if you are scanning for one device.
-        this.manager.stopDeviceScan();
+  // const subscription = bleManager.onStateChange(state => {
+  //   if (state === 'PoweredOn') {
+  //     startScanning();
+  //     subscription.remove();
+  //   }
+  // }, true);
 
-        // Proceed with connection.
-      }
-    });
-  };
+  // const startScanning = () => {
+  //   let dev;
+  //   bleManager.startDeviceScan(null, null, async (error, device) => {
+  //     if (device.name === 'N0B3G') {
+  //       const deviceConnected = await device.isConnected();
+
+  //       if (deviceConnected) {
+  //         await device.cancelConnection();
+  //       }
+
+  //       if (!deviceConnected) {
+  //         device.connect();
+  //       }
+  //       console.log('meh');
+  //       // do the stuff that you want to do
+  //     }
+  //   });
+  // };
 
   return (
     <>
@@ -175,8 +182,8 @@ const Home: () => React$Node = ({navigation: {navigate}}) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.submit]}
-                onPress={startScanning}>
-                <Text>Start Scanning</Text>
+                onPress={() => navigate('Bluetooth')}>
+                <Text>Bluetooth</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.submit]}

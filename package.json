@@ -8,7 +8,8 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "postinstall": "if [[ -z \"$CI\" ]]; then cd ios &&  pod install; fi"
+    "postinstall": "if [[ -z \"$CI\" ]]; then cd ios &&  pod install; fi",
+    "brian": "react-native run-ios --device 'Diana’s iPhone'"
   },
   "dependencies": {
     "@react-native-community/geolocation": "^2.0.2",
@@ -23,13 +24,15 @@
     "qs": "^6.9.1",
     "react": "16.9.0",
     "react-native": "0.61.5",
+    "react-native-ble-manager": "^7.2.0",
     "react-native-ble-plx": "^1.1.1",
     "react-native-gesture-handler": "^1.5.6",
     "react-native-maps": "0.26.1",
     "react-native-reanimated": "^1.7.0",
     "react-native-safe-area-context": "^0.7.2",
     "react-native-screens": "^2.0.0-beta.2",
-    "react-native-sensors": "^5.3.3"
+    "react-native-sensors": "^5.3.3",
+    "react-native-table-component": "^1.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",

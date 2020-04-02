@@ -6,7 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Home from './src/ui/Home';
 import InRide from './src/ui/InRide';
 import Results from './src/ui/Results';
-
+import Bluetooth from './src/ui/Bluetooth';
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useScreens();
 
@@ -19,6 +19,7 @@ const App = () => {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="InRide" component={InRide} />
         <Stack.Screen name="Results" component={Results} />
+        <Stack.Screen name="Bluetooth" component={Bluetooth} />
       </Stack.Navigator>
     </NavigationContainer>
   );
