@@ -5,6 +5,8 @@ import Voice from '@react-native-community/voice';
 import BackgroundTimer from 'react-native-background-timer';
 import DialogInput from 'react-native-dialog-input';
 
+import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
+import MapView, {Polyline} from 'react-native-maps';
 
 import {
   magnetometer,
@@ -131,9 +133,11 @@ const submitMeasures = (isRunning, myRide) => {
   
 };
 
-const InRide = ({route}) => {
-  const {myRide} = route.params;
+
   // Set up sensors from Sensor Library
+const InRide = ({route, navigation: {navigate}}) => {
+  const {name, level} = route.params;
+
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
@@ -338,7 +342,7 @@ const InRide = ({route}) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={playPause}
+          onPress={() => setIsRunning(!isRunning)}
           style={[
             styles.button,
             isRunning === true ? styles.clickedButton : styles.unClickedButton,
@@ -360,7 +364,14 @@ const InRide = ({route}) => {
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
-            submitMeasures(isRunning, myRide);
+            //submitMeasures(isRunning, myRide);
+            if (isRunning) {
+              console.log("turning off ride")
+              setIsRunning(false)
+              setVoice(false)
+              toggleMeasurements(isRunning, voiceRunning);
+            }
+            navigate('Results', {name: name, level: level, mag: mag, gps: gps, gyro: gyro, bar: bar, voice: voice, acc: acc});
           }}>
           <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>
