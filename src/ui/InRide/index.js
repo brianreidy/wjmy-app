@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
+import {StyleSheet, Text, SafeAreaView, View, SectionList} from 'react-native';
 import MapView, {Polyline, Marker} from 'react-native-maps';
-import Voice from 'react-native-voice';
+import Voice from '@react-native-community/voice';
+import BackgroundTimer from 'react-native-background-timer';
+import DialogInput from 'react-native-dialog-input';
 
-import setUpUser from '../../arch/setUpUser';
-import writeData from '../../arch/writeData';
 
 import {
   magnetometer,
@@ -19,81 +19,148 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import firestore from '@react-native-firebase/firestore';
 import Geolocation from '@react-native-community/geolocation';
 
-let mag = {};
-let gyro = {};
-let bar = {};
-let acc = {};
-let gps = {};
+let mag = [];
+let gyro = [];
+let bar = [];
+let acc = [];
+let gps = [];
 let coordsArr = [];
-let voice = {};
+let voice = [];
 let myMarkers = [];
+let oldTime = 0;
+let oldPhrase = "";
 
+BackgroundTimer.runBackgroundTimer(() => { 
+  //code that will be called every 20 seconds 
+  // check if voice is still on 
+  console.log("Its been 20 seconds" + voiceRunning)
+
+    if (voiceRunning) {
+      _startRecognizing()
+      
+    }
+  }, 
+  20000);
+
+
+// This function turns on/off sensors and voice based of if the ride has started
 const toggleMeasurements = (isRunning, voiceRunning) => {
-  // const magSubscription = magnetometer.subscribe(
-  //   ({x, y, z, timestamp}) => (mag[timestamp] = {x: x, y: y, z: z}),
-  //   error => console.log('magnetometer not available'),
-  // );
-  // const accSubscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
-  // acc[timestamp]={x:x, y:y, z:z}
-  // );
-  // const gyroSubscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
-  // gyro[timestamp]={x:x, y:y, z:z}
-  // );
-  // const barSubscription = barometer.subscribe(({ pressure }) =>
-  // bar[timestamp]={pressure:pressure}
-  // );
+  // measurements pushed to corresponding arrays
+  const magSubscription = magnetometer.subscribe(
+    ({x, y, z, timestamp}) => (mag.push({timestamp: timestamp, x: x, y: y, z: z})),
+    error => console.log('magnetometer not available'),
+  );
+  const accSubscription = accelerometer.subscribe(({ x, y, z, timestamp }) =>
+  acc.push({timestamp: timestamp, x:x, y:y, z:z}), 
+  error => console.log('accelerometer not available'),
+  );
+  const gyroSubscription = gyroscope.subscribe(({ x, y, z, timestamp }) =>
+  gyro.push({timestamp: timestamp, x:x, y:y, z:z}), 
+  error => console.log('gyroscope not available'),
+  );
+  const barSubscription = barometer.subscribe(({ pressure }) =>
+  bar.push({timestamp:timestamp, pressure:pressure}), 
+  error => console.log('barometer not available'),
+  );
+  // if voice is enabled, start voice recording
   if (voiceRunning) {
     _startRecognizing();
   } else {
     _stopRecognizing();
   }
   if (!isRunning) {
-    //magSubscription.unsubscribe();
-    //accSubscription.unsubscribe();
-    //gyroSubscription.unsubscribe();
-    //barSubscription.unsubscribe();
-    _stopRecognizing();
+    // turn off sensors if not running, in a try statement in case they were never turned on
+    try {
+      magSubscription.unsubscribe();
+      accSubscription.unsubscribe();
+      gyroSubscription.unsubscribe();
+      barSubscription.unsubscribe();
+      _stopRecognizing();
+      BackgroundTimer.stopBackgroundTimer(); //after this call all code on background stop run.
+    } catch {
+      console.log("Sensors weren't all turned on so can't be turned off -- basically don't worry about it")
+    }
   }
 };
 
-const submitMeasures = (mag, isRunning, myRide) => {
+const submitMeasures = (isRunning, myRide) => {
   console.log('submiting to database');
   if (isRunning) {
-    mag = toggleMeasurements(false);
+    console.log("turning off ride")
+    setIsRunning(false)
+    setVoice(false)
+    toggleMeasurements(isRunning, voiceRunning);
   }
-  myRide.doc('magnemometer').set(mag, {merge: true});
-  myRide.doc('gyroscope').set(gyro, {merge: true});
-  myRide.doc('barometer').set(bar, {merge: true});
-  myRide.doc('accelerometer').set(acc, {merge: true});
-  myRide.doc('gps').set(gps, {merge: true});
-  myRide.doc('voice').set(voice, {merge: true});
+  let obj = {}
+  try {
+    myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
+  } catch {
+    console.log("Magnemometer data not collected")
+  }
+  obj = {}
+  try {
+    myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
+  } catch {
+    console.log("Gyroscope data not collected")
+  }
+  obj = {}
+  try {
+    myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
+  } catch {
+    console.log("Barometer data not collected")
+  }
+  obj = {}
+  try {
+    myRide.doc('accelerometer').set(Object.assign(obj, acc), {merge: true});
+  }
+  catch {
+    console.log("Accelerometer data not collected")
+  }
+  obj = {}
+  try {
+    myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
+  } catch {
+    console.log("GPS data not collected")
+  }
+  obj = {}
+  try {
+    myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
+  } catch {
+    console.log("Voice data not collected")
+  }
+  
 };
 
 const InRide = ({route}) => {
   const {myRide} = route.params;
-  console.log(mag)
+  // Set up sensors from Sensor Library
   setUpdateIntervalForType(SensorTypes.magnetometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
 
-  const [isRunning, setIsRunning] = useState();
-  const [region, setRegion] = useState({
+  [isRunning, setIsRunning] = useState();
+  [region, setRegion] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
-  // const [error, setError] = useState("");
-  const [position, setPosition] = useState({
+
+  [position, setPosition] = useState({
     latitude: 0,
     longitude: 0,
   });
 
-  const [voiceRunning, setVoice] = useState(true)
+  [voiceRunning, setVoice] = useState(true);
+  [isDialogVisible, setDialog] = useState(false);
+  
+
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
     //console.log("Speech Starting")
+    oldPhrase = "";
+    oldTime = "";
   };
 
   Voice.onSpeechEnd = e => {
@@ -107,17 +174,35 @@ const InRide = ({route}) => {
   };
 
   Voice.onSpeechResults = e => {
-    console.log("Results: ")
+    let now = new Date().getTime()
+    let mins = new Date().getMinutes()
+    let secs = new Date().getSeconds()
+    if (mins < 10) {
+      mins = "0" + mins
+    }
+    if (secs < 10 ) {
+      secs = "0" + secs
+    }
+    nowReadable = new Date().getHours() + ':' + mins + ":" + secs
+
+    let phrase = String(e.value)
+    if ((now - oldTime) > 3000) { 
+      // at least 3 second difference between saying things
+        edited = phrase.replace(oldPhrase, "")
+        oldPhrase = phrase
+        oldTime = now
+    } else {
+         edited = phrase
+    }
+
     let myMemo = {
       "coordinate": {latitude: position.latitude, longitude:position.longitude},
-      "timestamp": String(new Date().getTime()),
-      "memo" : JSON.stringify(e.value),
+      "timestamp": String(now),
+      "readableTime": nowReadable,
+      "memo" : edited,
     }
-    voice[String(new Date().getTime())] = myMemo;
-    if (isRunning) {
-      myMarkers.push(myMemo)
-    }
-    
+    voice.push(myMemo);
+    myMarkers.push(myMemo)
     console.log(myMemo)
   }
 
@@ -125,9 +210,7 @@ const InRide = ({route}) => {
     //Starts listening for speech for a specific locale
     try {
       await Voice.start('en-US');
-      //console.log("compltednwaitt")
     } catch (e) {
-      //eslint-disable-next-line
       console.error(e);
     }
   };
@@ -135,7 +218,7 @@ const InRide = ({route}) => {
   _stopRecognizing = async () => {
     //Stops listening for speech
     try {
-      await Voice.stop();
+      await Voice.cancel();
       //console.log("Stopped")
     } catch (e) {
       //eslint-disable-next-line
@@ -143,32 +226,36 @@ const InRide = ({route}) => {
     }
   };
 
-  // _cancelRecognizing = async () => {
-  //   //Cancels the speech recognition
-  //   try {
-  //     await Voice.cancel();
-  //   } catch (e) {
-  //     //eslint-disable-next-line
-  //     console.error(e);
-  //   }
-  // };
-
-  // _destroyRecognizer = async () => {
-  //   //Destroys the current SpeechRecognizer instance
-  //   try {
-  //     await Voice.destroy();
-  //   } catch (e) {
-  //     //eslint-disable-next-line
-  //     console.error(e);
-  //   }
-  // };
+  const addMarker = (phrase) => {
+    setDialog(false)
+    let now = new Date().getTime()
+    let mins = new Date().getMinutes()
+    let secs = new Date().getSeconds()
+    if (mins < 10) {
+      mins = "0" + mins
+    }
+    if (secs < 10 ) {
+      secs = "0" + secs
+    }
+    nowReadable = new Date().getHours() + ':' + mins + ":" + secs
+    let myMemo = {
+      "coordinate": {latitude: position.latitude, longitude:position.longitude},
+      "timestamp": String(now),
+      "readableTime": nowReadable,
+      "memo" : phrase,
+    }
+    voice.push(myMemo);
+    myMarkers.push(myMemo)
+    console.log(myMemo)
+  }
 
   useEffect(() => {
     const watchId = Geolocation.watchPosition(
       pos => {
-        //console.log(pos)
+        //console.log("really " + pos.coords.longitude)
+        setPosition(pos.coords)
         if (isRunning) {
-          gps[pos.timestamp] = pos.coords;
+          gps.push({timestamp: pos.timestamp, coordinates: pos.coords});
           coordsArr = [
             {
               longitude: pos.coords.longitude,
@@ -176,11 +263,9 @@ const InRide = ({route}) => {
             },
             ...coordsArr,
           ];
-          setPosition({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
         }
+        //console.log("position " + position.longitude)
+        //console.log("reegion " + region.longitude)
         setRegion({
           longitude: pos.coords.longitude,
           latitude: pos.coords.latitude,
@@ -202,10 +287,10 @@ const InRide = ({route}) => {
   const playPause = () => {
     toggleMeasurements(isRunning, voiceRunning, myRide);
     setIsRunning(!isRunning);
+    BackgroundTimer.stopBackgroundTimer(); 
     //setVoice(!voiceRunning);
   };
   const playPauseVoice = () => {
-    
     if (!voiceRunning) {
       setVoice(true)
       _startRecognizing()
@@ -219,6 +304,14 @@ const InRide = ({route}) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => setDialog(true)}><Text>Add Note/Marker</Text></TouchableOpacity>
+      <DialogInput isDialogVisible={isDialogVisible}
+            title={"Add Marker to Current Location"}
+            message={"Add note about ride"}
+            hintInput ={"type description here"}
+            submitInput={ (inputText) => {addMarker(inputText)} }
+            closeDialog={ () => {setDialog(false)}}>
+      </DialogInput>
       <MapView style={styles.map} region={region}> 
         <Polyline
           coordinates={coordsArr}
@@ -237,7 +330,7 @@ const InRide = ({route}) => {
           <Marker
             coordinate={marker.coordinate}
             title={marker.memo}
-            description={marker.timestamp}
+            description={marker.readableTime}
           />
         ))}
       </MapView>
@@ -267,10 +360,11 @@ const InRide = ({route}) => {
         <TouchableOpacity
           style={[styles.button, styles.submit]}
           onPress={() => {
-            submitMeasures(mag, isRunning, myRide);
+            submitMeasures(isRunning, myRide);
           }}>
           <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>
+        
       </View>
     </View>
   );
