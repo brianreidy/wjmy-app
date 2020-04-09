@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
 import MapView, {Polyline} from 'react-native-maps';
-import writeData from '../../arch/writeData';
 
 import {
   magnetometer,
