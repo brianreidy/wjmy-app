@@ -24,7 +24,7 @@ import getFitbitData from './getFitbitData';
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
-const submitMeasures = (gps, mag, heartRate, myRide) => {
+const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, myRide) => {
   if (heartRate == null) {
     Alert.alert(
       'Fitbit data not gathered',
@@ -38,22 +38,97 @@ const submitMeasures = (gps, mag, heartRate, myRide) => {
         {
           text: 'SEND',
           onPress: () => {
-            myRide.doc('magnemometer').set(mag, {merge: true});
-            myRide.doc('gps').set(gps, {merge: true});
+            let obj = {}
+              try {
+                myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
+              } catch {
+                console.log("Magnemometer data not collected")
+              }
+              obj = {}
+              try {
+                myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
+              } catch {
+                console.log("Gyroscope data not collected")
+              }
+              obj = {}
+              try {
+                myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
+              } catch {
+                console.log("Barometer data not collected")
+              }
+              obj = {}
+              try {
+                myRide.doc('accelerometer').set(Object.assign(obj, acc), {merge: true});
+              }
+              catch {
+                console.log("Accelerometer data not collected")
+              }
+              obj = {}
+              try {
+                myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
+              } catch {
+                console.log("GPS data not collected")
+              }
+              obj = {}
+              try {
+                myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
+              } catch {
+                console.log("Voice data not collected")
+              }
+  
           },
         },
       ],
       {cancelable: false},
     );
   } else {
-    myRide.doc('magnemometer').set(mag, {merge: true});
-    myRide.doc('gps').set(gps, {merge: true});
+    let obj = {}
+    try {
+      myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
+    } catch {
+      console.log("Magnemometer data not collected")
+    }
+    obj = {}
+    try {
+      myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
+    } catch {
+      console.log("Gyroscope data not collected")
+    }
+    obj = {}
+    try {
+      myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
+    } catch {
+      console.log("Barometer data not collected")
+    }
+    obj = {}
+    try {
+      myRide.doc('accelerometer').set(Object.assign(obj, acc), {merge: true});
+    }
+    catch {
+      console.log("Accelerometer data not collected")
+    }
+    obj = {}
+    try {
+      myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
+    } catch {
+      console.log("GPS data not collected")
+    }
+    obj = {}
+    try {
+      myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
+    } catch {
+      console.log("Voice data not collected")
+    }
     myRide.doc('heartrate').set(heartRate, {merge: true});
   }
 };
 
+const submitSensors = () => {
+  
+};
+
 const Results: () => React$Node = ({route, navigation: {navigate}}) => {
-  const {name, level, mag, gps} = route.params;
+  const {name, level, mag, gps, gyro, bar, voice, acc} = route.params;
   const [myRide, setRide] = useState();
   const [heartRate, setHeartRate] = useState();
 
@@ -142,7 +217,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => submitMeasures(gps, mag, heartRate, myRide)}
+              onPress={() => submitMeasures(gps, mag, gyro, bar, acc, voice, heartRate, myRide)}
               style={[styles.button, styles.submit]}>
               <Text>Submit</Text>
             </TouchableOpacity>

@@ -5,8 +5,6 @@ import Voice from '@react-native-community/voice';
 import BackgroundTimer from 'react-native-background-timer';
 import DialogInput from 'react-native-dialog-input';
 
-import {StyleSheet, Text, SafeAreaView, View} from 'react-native';
-import MapView, {Polyline} from 'react-native-maps';
 
 import {
   magnetometer,
@@ -36,11 +34,15 @@ BackgroundTimer.runBackgroundTimer(() => {
   //code that will be called every 20 seconds 
   // check if voice is still on 
   console.log("Its been 20 seconds" + voiceRunning)
-
-    if (voiceRunning) {
-      _startRecognizing()
-      
+    try {
+      if (voiceRunning) {
+        _startRecognizing()
+        
+      }
+    } catch {
+      console.log("possible problem with background timer")
     }
+    
   }, 
   20000);
 
@@ -73,65 +75,19 @@ const toggleMeasurements = (isRunning, voiceRunning) => {
   if (!isRunning) {
     // turn off sensors if not running, in a try statement in case they were never turned on
     try {
+      BackgroundTimer.stopBackgroundTimer(); //after this call all code on background stop run.
       magSubscription.unsubscribe();
       accSubscription.unsubscribe();
       gyroSubscription.unsubscribe();
       barSubscription.unsubscribe();
       _stopRecognizing();
-      BackgroundTimer.stopBackgroundTimer(); //after this call all code on background stop run.
     } catch {
       console.log("Sensors weren't all turned on so can't be turned off -- basically don't worry about it")
     }
   }
 };
 
-const submitMeasures = (isRunning, myRide) => {
-  console.log('submiting to database');
-  if (isRunning) {
-    console.log("turning off ride")
-    setIsRunning(false)
-    setVoice(false)
-    toggleMeasurements(isRunning, voiceRunning);
-  }
-  let obj = {}
-  try {
-    myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
-  } catch {
-    console.log("Magnemometer data not collected")
-  }
-  obj = {}
-  try {
-    myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
-  } catch {
-    console.log("Gyroscope data not collected")
-  }
-  obj = {}
-  try {
-    myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
-  } catch {
-    console.log("Barometer data not collected")
-  }
-  obj = {}
-  try {
-    myRide.doc('accelerometer').set(Object.assign(obj, acc), {merge: true});
-  }
-  catch {
-    console.log("Accelerometer data not collected")
-  }
-  obj = {}
-  try {
-    myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
-  } catch {
-    console.log("GPS data not collected")
-  }
-  obj = {}
-  try {
-    myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
-  } catch {
-    console.log("Voice data not collected")
-  }
-  
-};
+
 
 
   // Set up sensors from Sensor Library
