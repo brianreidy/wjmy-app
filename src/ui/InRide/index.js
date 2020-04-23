@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, SafeAreaView, View, SectionList} from 'react-native';
+import {StyleSheet, Text, SafeAreaView, View, SectionList, Modal, ScrollView,
+  StatusBar} from 'react-native';
 import MapView, {Polyline, Marker} from 'react-native-maps';
 import Voice from '@react-native-community/voice';
 import BackgroundTimer from 'react-native-background-timer';
 import DialogInput from 'react-native-dialog-input';
-
+import surveyHelper from './surveyHelper';
+import {Picker, Icon} from 'native-base';
 
 import {
   magnetometer,
@@ -16,8 +18,9 @@ import {
 } from 'react-native-sensors';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import firestore from '@react-native-firebase/firestore';
 import Geolocation from '@react-native-community/geolocation';
+
+
 
 let mag = [];
 let gyro = [];
@@ -29,11 +32,12 @@ let voice = [];
 let myMarkers = [];
 let oldTime = 0;
 let oldPhrase = "";
+const  surveys = surveyHelper.InRide();
+
 
 BackgroundTimer.runBackgroundTimer(() => { 
   //code that will be called every 20 seconds 
   // check if voice is still on 
-  console.log("Its been 20 seconds" + voiceRunning)
     try {
       if (voiceRunning) {
         _startRecognizing()
@@ -46,6 +50,7 @@ BackgroundTimer.runBackgroundTimer(() => {
   }, 
   20000);
 
+ 
 
 // This function turns on/off sensors and voice based of if the ride has started
 const toggleMeasurements = (isRunning, voiceRunning) => {
@@ -89,7 +94,6 @@ const toggleMeasurements = (isRunning, voiceRunning) => {
 
 
 
-
   // Set up sensors from Sensor Library
 const InRide = ({route, navigation: {navigate}}) => {
   const {name, level} = route.params;
@@ -98,6 +102,9 @@ const InRide = ({route, navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
+ 
+  // Get questions from firebase realtime database
+ 
 
   [isRunning, setIsRunning] = useState();
   [region, setRegion] = useState({
@@ -114,7 +121,11 @@ const InRide = ({route, navigation: {navigate}}) => {
 
   [voiceRunning, setVoice] = useState(true);
   [isDialogVisible, setDialog] = useState(false);
-  
+  [modalVisible, setVisible] = useState(false);
+  [modalInfo, setModalInfo] = useState([]);
+  [modalAnswers, setAnswers] = useState();
+  [select, setSelect] = useState(0)
+ 
 
   Voice.onSpeechStart = e => {
     //Invoked when .start() is called without error
@@ -206,7 +217,7 @@ const InRide = ({route, navigation: {navigate}}) => {
     }
     voice.push(myMemo);
     myMarkers.push(myMemo)
-    console.log(myMemo)
+
   }
 
   useEffect(() => {
@@ -264,7 +275,18 @@ const InRide = ({route, navigation: {navigate}}) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => setDialog(true)}><Text>Add Note/Marker</Text></TouchableOpacity>
+    <View style={styles.topbuttonContainer}>
+      <TouchableOpacity style={styles.surveyButton} onPress={() => setDialog(true)}><Text>Add Note/Marker</Text></TouchableOpacity>
+      <Text>Take Surveys:</Text>
+        <View style={styles.tabs}>
+          {surveys.map((survey, i) => (
+            <TouchableOpacity style={styles.surveyButton} onPress={() => [setVisible(true), setModalInfo(survey.content), console.log(survey.content)]}>
+              <Text>{survey.name}</Text>
+            </TouchableOpacity>
+          ))}
+          
+        </View>
+    </View>
       <DialogInput isDialogVisible={isDialogVisible}
             title={"Add Marker to Current Location"}
             message={"Add note about ride"}
@@ -272,7 +294,56 @@ const InRide = ({route, navigation: {navigate}}) => {
             submitInput={ (inputText) => {addMarker(inputText)} }
             closeDialog={ () => {setDialog(false)}}>
       </DialogInput>
-      <MapView style={styles.map} region={region}> 
+      <Modal visible={modalVisible}>
+            <StatusBar barStyle="dark-content" />
+              <SafeAreaView>
+                <ScrollView
+                  contentInsetAdjustmentBehavior="automatic"
+                  style={styles.scrollView}>
+                  {global.HermesInternal == null ? null : (
+                    <View style={styles.engine}>
+                      <Text style={styles.footer}>Engine: Hermes</Text>
+                    </View>
+                  )}
+                </ScrollView>
+            </SafeAreaView>
+              <View style={styles.sectionContainer}>
+                <TouchableOpacity onPress = {() => setVisible(false)}>
+                    <Text>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <Text>{'\n'}</Text>
+                  <Text style={styles.sectionTitle}>Survey:</Text>
+                  <Text>{'\n'}</Text>
+                  {modalInfo.map((item, index) => {
+                    return(
+                      <View>
+                        <Text>{item.question}</Text>
+                        <Picker mode='dropdown' placeholder="Click here to select answer" >
+                        {(item.answers).map((options, choice) => {
+                        return(<Picker.Item label={options} value={choice} />);
+                        })}
+                      </Picker>
+                    </View>
+                      )
+                  })}
+                  
+                <Text>{'\n'}</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.button, styles.submit]} onPress = {() => setVisible(false)}>
+                  <Text>
+                    Submit
+                  </Text>
+                </TouchableOpacity>
+                </View>
+            </Modal>
+      <MapView 
+        style={styles.map} 
+        showsUserLocation={ true }
+        zoomEnabled={true}
+        region={region}> 
         <Polyline
           coordinates={coordsArr}
           strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
@@ -344,6 +415,12 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  topbuttonContainer: {
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    alignSelf: 'center',
+ 
+  },
   buttonContainer: {
     position: 'absolute',
     justifyContent: 'center',
@@ -371,6 +448,21 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginVertical: 5,
     borderRadius: 8,
+    textAlign: 'center',
+  },
+  surveyButton:{
+    textAlign: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#F9AA33',
+  },
+  tabs: {
+    alignSelf: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height:40,
+
   },
   instructions: {
     textAlign: 'center',
@@ -380,3 +472,5 @@ const styles = StyleSheet.create({
 });
 
 export default InRide;
+
+
