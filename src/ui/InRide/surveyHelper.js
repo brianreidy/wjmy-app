@@ -24,6 +24,7 @@ const surveyHelper = {
                             const currItem = currSurvey[newKeys[j]]
                             myItem = {
                                 question: currItem["Question"],
+                                userAnswer: null
                             }
                             if (currItem["Answers"]){
                                 myItem['answers'] = currItem["Answers"].split(',')

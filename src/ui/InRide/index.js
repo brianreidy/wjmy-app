@@ -6,7 +6,7 @@ import Voice from '@react-native-community/voice';
 import BackgroundTimer from 'react-native-background-timer';
 import DialogInput from 'react-native-dialog-input';
 import surveyHelper from './surveyHelper';
-import {Picker, Icon} from 'native-base';
+import {Picker} from 'native-base';
 
 import {
   magnetometer,
@@ -123,7 +123,7 @@ const InRide = ({route, navigation: {navigate}}) => {
   [isDialogVisible, setDialog] = useState(false);
   [modalVisible, setVisible] = useState(false);
   [modalInfo, setModalInfo] = useState([]);
-  [modalAnswers, setAnswers] = useState();
+  [modalAnswers, setAnswers] = useState({});
   [select, setSelect] = useState(0)
  
 
@@ -272,6 +272,17 @@ const InRide = ({route, navigation: {navigate}}) => {
     console.log(voiceRunning)
     
   };
+  onValueChangeType= (answer, index) => {
+    console.log("change value called")
+    updated = modalInfo
+    updated[index].userAnswer = answer
+    updatedAnswers = modalAnswers
+    updatedAnswers[index] = answer
+    setModalInfo(updated)
+    setAnswers(updatedAnswers)
+    console.log(updatedAnswers)
+    
+  }
 
   return (
     <View style={styles.container}>
@@ -320,7 +331,7 @@ const InRide = ({route, navigation: {navigate}}) => {
                     return(
                       <View>
                         <Text>{item.question}</Text>
-                        <Picker mode='dropdown' placeholder="Click here to select answer" >
+                        <Picker mode='dropdown' placeholder="Click here to select answer" selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
                         {(item.answers).map((options, choice) => {
                         return(<Picker.Item label={options} value={choice} />);
                         })}
