@@ -36,6 +36,7 @@ target 'wjmy' do
   pod 'Firebase/Database', '~> 6.13.0'
   pod 'Firebase/Auth'
   pod 'Firebase/Analytics'
+#  pod 'RNVectorIcons', :path => '../node_modeules/react-native-vector-icons'
   target 'wjmyTests' do
     inherit! :search_paths
     # Pods for testing

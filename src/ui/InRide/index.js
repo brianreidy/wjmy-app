@@ -6,7 +6,7 @@ import Voice from '@react-native-community/voice';
 import BackgroundTimer from 'react-native-background-timer';
 import DialogInput from 'react-native-dialog-input';
 import surveyHelper from './surveyHelper';
-import {Picker} from 'native-base';
+import {Picker, Icon} from 'native-base';
 
 import {
   magnetometer,
@@ -21,7 +21,6 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Geolocation from '@react-native-community/geolocation';
 
 
-
 let mag = [];
 let gyro = [];
 let bar = [];
@@ -34,6 +33,7 @@ let oldTime = 0;
 let oldPhrase = "";
 const  surveys = surveyHelper.InRide();
 
+const useForceUpdate = () => useState()[1];
 
 BackgroundTimer.runBackgroundTimer(() => { 
   //code that will be called every 20 seconds 
@@ -102,7 +102,7 @@ const InRide = ({route, navigation: {navigate}}) => {
   setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.gyroscope, 400); // defaults to 100ms
   setUpdateIntervalForType(SensorTypes.barometer, 400); // defaults to 100ms
- 
+  const forceUpdate = useForceUpdate();
   // Get questions from firebase realtime database
  
 
@@ -123,7 +123,7 @@ const InRide = ({route, navigation: {navigate}}) => {
   [isDialogVisible, setDialog] = useState(false);
   [modalVisible, setVisible] = useState(false);
   [modalInfo, setModalInfo] = useState([]);
-  [modalAnswers, setAnswers] = useState({});
+  [modalAnswers, setAnswers] = useState([]);
   [select, setSelect] = useState(0)
  
 
@@ -272,16 +272,29 @@ const InRide = ({route, navigation: {navigate}}) => {
     console.log(voiceRunning)
     
   };
-  onValueChangeType= (answer, index) => {
-    console.log("change value called")
-    updated = modalInfo
-    updated[index].userAnswer = answer
-    updatedAnswers = modalAnswers
-    updatedAnswers[index] = answer
-    setModalInfo(updated)
-    setAnswers(updatedAnswers)
-    console.log(updatedAnswers)
-    
+
+  const onValueChangeType= (answer, index) => {
+    // Update the document title using the browser API
+      updated = modalInfo
+      updated[index].userAnswer = answer
+      updatedAnswers = modalAnswers
+      updatedAnswers[index] = answer
+      setModalInfo(updated)
+      setAnswers(updatedAnswers)
+      console.log(updatedAnswers)
+      return(
+        modalInfo.map((item, index) => {
+      }))
+    }
+
+ 
+
+  sendSurvey = () => {
+    try {
+      myRide.doc("Surveys").set(modalInfo, {merge: true});
+    } catch {
+      console.log("Not able to send surveys. Data not collected")
+    }
   }
 
   return (
@@ -331,19 +344,23 @@ const InRide = ({route, navigation: {navigate}}) => {
                     return(
                       <View>
                         <Text>{item.question}</Text>
-                        <Picker mode='dropdown' placeholder="Click here to select answer" selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
+                        <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={modalAnswers[index]} onValueChange={(value) => {onValueChangeType(value, index)}}>
                         {(item.answers).map((options, choice) => {
-                        return(<Picker.Item label={options} value={choice} />);
+                        return(<Picker.Item label={options} value={choice} />)
                         })}
                       </Picker>
                     </View>
                       )
                   })}
+                <Picker mode='dropdown' placeholder="Click here to select answer" iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={0} onValueChange={(value) => {selectedValue=value}}>
+                <Picker.Item label={"cool"} value={0} />
+                <Picker.Item label={"ok"} value={1} />
+                </Picker>
                   
                 <Text>{'\n'}</Text>
                 <TouchableOpacity
                   style={[
-                    styles.button, styles.submit]} onPress = {() => setVisible(false)}>
+                    styles.button, styles.submit]} onPress = {() => [sendSurvey(), setVisible(false)]}>
                   <Text>
                     Submit
                   </Text>
