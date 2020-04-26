@@ -123,7 +123,7 @@ const InRide = ({route, navigation: {navigate}}) => {
   [isDialogVisible, setDialog] = useState(false);
   [modalVisible, setVisible] = useState(false);
   [modalInfo, setModalInfo] = useState({name:'', content: []});
-  [modalAnswers, setAnswers] = useState([]);
+  [surveyAnswers, setAnswers] = useState(surveys);
   [select, setSelect] = useState(0)
 
   
@@ -279,25 +279,15 @@ const InRide = ({route, navigation: {navigate}}) => {
     // Update the document title using the browser API
       updated = modalInfo.content
       updated[index].userAnswer = answer
-      updatedAnswers = modalAnswers
-      updatedAnswers[index] = answer
-
-      setModalInfo({name: modalInfo.name, content:updated})
+      updatedAnswers = surveyAnswers
+      console.log(updatedAnswers)
+      console.log(modalInfo)
+      console.log(modalInfo.num)
+      updatedAnswers[modalInfo.num]["content"] = updated
+      setModalInfo({name: modalInfo.name, num: modalInfo.num, content:updated})
       setAnswers(updatedAnswers)
       console.log(updatedAnswers)
-      
     }
-
- 
-
-  sendSurvey = () => {
-    try {
-      myRide.doc("Surveys").set(modalInfo, {merge: true});
-    } catch {
-      console.log("Not able to send surveys. Data not collected")
-    }
-  }
-
   return (
     <View style={styles.container}>
     <View style={styles.topbuttonContainer}>
@@ -305,7 +295,7 @@ const InRide = ({route, navigation: {navigate}}) => {
       <Text>Take Surveys:</Text>
         <View style={styles.tabs}>
           {surveys.map((survey, i) => (
-            <TouchableOpacity style={styles.surveyButton} onPress={() => [setVisible(true), setModalInfo(survey), console.log(survey.content)]}>
+            <TouchableOpacity style={styles.surveyButton} onPress={() => [setVisible(true), setModalInfo(survey), console.log(survey)]}>
               <Text>{survey.name}</Text>
             </TouchableOpacity>
           ))}
@@ -348,7 +338,7 @@ const InRide = ({route, navigation: {navigate}}) => {
                         <Text>{item.question}</Text>
                         <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
                         {(item.answers).map((options, choice) => {
-                          return(<Picker.Item label={options} value={choice} />)
+                          return(<Picker.Item label={options} value={options} />)
                         })}
                       </Picker>
                     </View>
@@ -359,7 +349,7 @@ const InRide = ({route, navigation: {navigate}}) => {
                 <Text>{'\n'}</Text>
                 <TouchableOpacity
                   style={[
-                    styles.button, styles.submit]} onPress = {() => [sendSurvey(), setVisible(false)]}>
+                    styles.button, styles.submit]} onPress = {() => [setVisible(false)]}>
                   <Text>
                     Submit
                   </Text>
@@ -425,7 +415,7 @@ const InRide = ({route, navigation: {navigate}}) => {
               setVoice(false)
               toggleMeasurements(isRunning, voiceRunning);
             }
-            navigate('Results', {name: name, level: level, mag: mag, gps: gps, gyro: gyro, bar: bar, voice: voice, acc: acc});
+            navigate('Results', {name: name, level: level, mag: mag, gps: gps, gyro: gyro, bar: bar, voice: voice, acc: acc, surveyAnswers: surveyAnswers});
           }}>
           <Text style={styles.text}>send to database</Text>
         </TouchableOpacity>

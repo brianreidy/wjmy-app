@@ -16,15 +16,21 @@ import {
   StatusBar,
   Alert,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
+
+import {Picker, Icon} from 'native-base';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import setUpUser from '../../arch/setUpUser';
 import getFitbitData from './getFitbitData';
+import surveyHelper from '../InRide/surveyHelper';
+
+let post = surveyHelper.PostRide();
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
-const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, myRide) => {
+const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRide) => {
   if (heartRate == null) {
     Alert.alert(
       'Fitbit data not gathered',
@@ -75,6 +81,13 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, myRide) => {
               } catch {
                 console.log("Voice data not collected")
               }
+              obj = {}
+              try {
+                console.log(survey)
+                myRide.doc("Surveys").set(survey, {merge: true});
+              } catch (e) {
+                console.log("Not able to send surveys. Data not collected")
+              }
   
           },
         },
@@ -120,6 +133,13 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, myRide) => {
       console.log("Voice data not collected")
     }
     myRide.doc('heartrate').set(heartRate, {merge: true});
+    
+    try {
+      myRide.doc("Surveys").set(survey, {merge: true});
+    } catch (e) {
+      console.log("Not able to send surveys. Data not collected")
+    }
+    
   }
 };
 
@@ -127,87 +147,116 @@ const submitSensors = () => {
   
 };
 
+const setSurveys = (first, last) => {
+  last.forEach(element => {
+    console.log("for each")
+    console.log(element)
+    first.push(element)
+  })
+  console.log("first")
+  console.log(first)
+  return first
+  
+}
+
 const Results: () => React$Node = ({route, navigation: {navigate}}) => {
-  const {name, level, mag, gps, gyro, bar, voice, acc} = route.params;
+  const {name, level, mag, gps, gyro, bar, voice, acc, surveyAnswers} = route.params;
   const [myRide, setRide] = useState();
   const [heartRate, setHeartRate] = useState();
+  [allAnswers, setAnswers] = useState(setSurveys(post, surveyAnswers));
+  console.log("all");
+  console.log(allAnswers);
+  [modalInfo, setModalInfo] = useState({name:'', content: []});
+  [modalVisible, setVisible] = useState(false);
 
+  
   useEffect(() => {
     setRide(setUpUser(name, level));
   }, [name, level]);
 
-  // const subscription = magnetometer.subscribe(({x, y, z, timestamp}) =>
-  //   console.log({x, y, z, timestamp}),
-  // );
-  console.log('im hur ', heartRate);
+  const onValueChangeType= (answer, index) => {
+    // Update the document title using the browser API
+      updated = modalInfo.content // this is just the post survey
+      updated[index].userAnswer = answer // set the user answer of post so drop down updates
+      updatedAnswers = allAnswers  // this should be all the things
+      updatedAnswers[0]["content"] = updated
+      setModalInfo({name: modalInfo.name, num: modalInfo.num, content:updated})
+      setAnswers(updatedAnswers)
+      console.log("easy")
+      console.log(updatedAnswers)
+    }
+
+  
   return (
     <>
       <StatusBar barStyle="dark-content" />
+          <View style={styles.body}>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Take Survey</Text>
+              <View style={styles.tabs}>
+                  <TouchableOpacity style={[styles.button, styles.clickedButton]} onPress={() => [setVisible(true), setModalInfo(allAnswers[0]), console.log(modalInfo)]}>
+                    <Text style={styles.clickedText}>Post Ride</Text>
+                  </TouchableOpacity>
+                </View></View>
+            <Modal visible={modalVisible}>
+            <StatusBar barStyle="dark-content" />
+              <SafeAreaView>
+                <ScrollView
+                  contentInsetAdjustmentBehavior="automatic"
+                  style={styles.scrollView}>
+                  {global.HermesInternal == null ? null : (
+                    <View style={styles.engine}>
+                      <Text style={styles.footer}>Engine: Hermes</Text>
+                    </View>
+                  )}
+                </ScrollView>
+            </SafeAreaView>
+              <View style={styles.sectionContainer}>
+                <TouchableOpacity onPress = {() => setVisible(false)}>
+                    <Text>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                  <Text>{'\n'}</Text>
+                  <Text style={styles.sectionTitle}>{modalInfo.name} Survey:</Text>
+                  <Text>{'\n'}</Text>
+                  
+                  {(modalInfo.content).map((item, index) => {
+                      return(
+                      <View>
+                        <Text>{item.question}</Text>
+                        <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
+                        {(item.answers).map((options, choice) => {
+                          return(<Picker.Item label={options} value={choice} />)
+                        })}
+                      </Picker>
+                    </View>
+                      )  
+                  })}
+  
+                  
+                <Text>{'\n'}</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.button, styles.submit]} onPress = {() => [setVisible(false)]}>
+                  <Text>
+                    Submit
+                  </Text>
+                </TouchableOpacity>
+              </View>    
+            </Modal>
+            </View>
       <SafeAreaView>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
+            <View>
           {global.HermesInternal == null ? null : (
             <View style={styles.engine}>
               <Text style={styles.footer}>Engine: Hermes</Text>
             </View>
           )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Questions</Text>
-              <Text style={styles.highlight}>
-                Excepteur sint occaecat cupidatat non proident, sunt in culpa
-                qui officia deserunt mollit anim id est laborum."
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  level === 0 ? styles.clickedButton : styles.unClickedButton,
-                ]}>
-                <Text
-                  style={
-                    level === 0 ? styles.clickedText : styles.unClickedText
-                  }>
-                  Lorem ipsum dolor sit
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  level === 1 ? styles.clickedButton : styles.unClickedButton,
-                ]}>
-                <Text
-                  style={
-                    level === 1 ? styles.clickedText : styles.unClickedText
-                  }>
-                  consectetur adipiscing elit
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  level === 2 ? styles.clickedButton : styles.unClickedButton,
-                ]}>
-                <Text
-                  style={
-                    level === 2 ? styles.clickedText : styles.unClickedText
-                  }>
-                  sed do eiusmod tempor incididunt
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  level === 3 ? styles.clickedButton : styles.unClickedButton,
-                ]}>
-                <Text
-                  style={
-                    level === 3 ? styles.clickedText : styles.unClickedText
-                  }>
-                  Ut enim ad minim veniam, quis
-                </Text>
-              </TouchableOpacity>
-            </View>
+          
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Go to Fitbit</Text>
               <TouchableOpacity
@@ -217,7 +266,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => submitMeasures(gps, mag, gyro, bar, acc, voice, heartRate, myRide)}
+              onPress={() => submitMeasures(gps, mag, gyro, bar, acc, voice, heartRate, allAnswers, myRide)}
               style={[styles.button, styles.submit]}>
               <Text>Submit</Text>
             </TouchableOpacity>
