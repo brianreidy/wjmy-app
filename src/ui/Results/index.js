@@ -26,7 +26,7 @@ import setUpUser from '../../arch/setUpUser';
 import getFitbitData from './getFitbitData';
 import surveyHelper from '../InRide/surveyHelper';
 
-let post = surveyHelper.PostRide();
+
 
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
@@ -84,7 +84,7 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
               obj = {}
               try {
                 console.log(survey)
-                myRide.doc("Surveys").set(survey, {merge: true});
+                myRide.doc("Surveys").set(Object.assign(obj, survey), {merge: true});
               } catch (e) {
                 console.log("Not able to send surveys. Data not collected")
               }
@@ -133,9 +133,9 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
       console.log("Voice data not collected")
     }
     myRide.doc('heartrate').set(heartRate, {merge: true});
-    
+    obj = {}
     try {
-      myRide.doc("Surveys").set(survey, {merge: true});
+      myRide.doc("Surveys").set(Object.assign(obj, survey), {merge: true});
     } catch (e) {
       console.log("Not able to send surveys. Data not collected")
     }
@@ -143,27 +143,14 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
   }
 };
 
-const submitSensors = () => {
-  
-};
 
-const setSurveys = (first, last) => {
-  last.forEach(element => {
-    console.log("for each")
-    console.log(element)
-    first.push(element)
-  })
-  console.log("first")
-  console.log(first)
-  return first
-  
-}
+
 
 const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   const {name, level, mag, gps, gyro, bar, voice, acc, surveyAnswers} = route.params;
   const [myRide, setRide] = useState();
   const [heartRate, setHeartRate] = useState();
-  [allAnswers, setAnswers] = useState(setSurveys(post, surveyAnswers));
+  [allAnswers, setAnswers] = useState(surveyAnswers);
   console.log("all");
   console.log(allAnswers);
   [modalInfo, setModalInfo] = useState({name:'', content: []});
@@ -173,6 +160,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
   useEffect(() => {
     setRide(setUpUser(name, level));
   }, [name, level]);
+
 
   const onValueChangeType= (answer, index) => {
     // Update the document title using the browser API
@@ -227,7 +215,7 @@ const Results: () => React$Node = ({route, navigation: {navigate}}) => {
                         <Text>{item.question}</Text>
                         <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
                         {(item.answers).map((options, choice) => {
-                          return(<Picker.Item label={options} value={choice} />)
+                          return(<Picker.Item label={options} value={options} />)
                         })}
                       </Picker>
                     </View>

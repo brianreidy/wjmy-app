@@ -32,6 +32,7 @@ let myMarkers = [];
 let oldTime = 0;
 let oldPhrase = "";
 const  surveys = surveyHelper.InRide();
+const post = surveyHelper.PostRide();
 
 const useForceUpdate = () => useState()[1];
 
@@ -288,6 +289,13 @@ const InRide = ({route, navigation: {navigate}}) => {
       setAnswers(updatedAnswers)
       console.log(updatedAnswers)
     }
+
+  const setSurveysUp = () => {
+    half = surveyAnswers
+    half.unshift(post[0])
+    setAnswers(half)
+  }
+
   return (
     <View style={styles.container}>
     <View style={styles.topbuttonContainer}>
@@ -415,6 +423,7 @@ const InRide = ({route, navigation: {navigate}}) => {
               setVoice(false)
               toggleMeasurements(isRunning, voiceRunning);
             }
+            setSurveysUp();
             navigate('Results', {name: name, level: level, mag: mag, gps: gps, gyro: gyro, bar: bar, voice: voice, acc: acc, surveyAnswers: surveyAnswers});
           }}>
           <Text style={styles.text}>send to database</Text>
