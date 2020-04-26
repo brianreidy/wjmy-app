@@ -122,9 +122,11 @@ const InRide = ({route, navigation: {navigate}}) => {
   [voiceRunning, setVoice] = useState(true);
   [isDialogVisible, setDialog] = useState(false);
   [modalVisible, setVisible] = useState(false);
-  [modalInfo, setModalInfo] = useState([]);
+  [modalInfo, setModalInfo] = useState({name:'', content: []});
   [modalAnswers, setAnswers] = useState([]);
   [select, setSelect] = useState(0)
+
+  
  
 
   Voice.onSpeechStart = e => {
@@ -275,16 +277,15 @@ const InRide = ({route, navigation: {navigate}}) => {
 
   const onValueChangeType= (answer, index) => {
     // Update the document title using the browser API
-      updated = modalInfo
+      updated = modalInfo.content
       updated[index].userAnswer = answer
       updatedAnswers = modalAnswers
       updatedAnswers[index] = answer
-      setModalInfo(updated)
+
+      setModalInfo({name: modalInfo.name, content:updated})
       setAnswers(updatedAnswers)
       console.log(updatedAnswers)
-      return(
-        modalInfo.map((item, index) => {
-      }))
+      
     }
 
  
@@ -304,7 +305,7 @@ const InRide = ({route, navigation: {navigate}}) => {
       <Text>Take Surveys:</Text>
         <View style={styles.tabs}>
           {surveys.map((survey, i) => (
-            <TouchableOpacity style={styles.surveyButton} onPress={() => [setVisible(true), setModalInfo(survey.content), console.log(survey.content)]}>
+            <TouchableOpacity style={styles.surveyButton} onPress={() => [setVisible(true), setModalInfo(survey), console.log(survey.content)]}>
               <Text>{survey.name}</Text>
             </TouchableOpacity>
           ))}
@@ -338,24 +339,22 @@ const InRide = ({route, navigation: {navigate}}) => {
                     </Text>
                   </TouchableOpacity>
                   <Text>{'\n'}</Text>
-                  <Text style={styles.sectionTitle}>Survey:</Text>
+                  <Text style={styles.sectionTitle}>{modalInfo.name} Survey:</Text>
                   <Text>{'\n'}</Text>
-                  {modalInfo.map((item, index) => {
-                    return(
+                  
+                  {(modalInfo.content).map((item, index) => {
+                      return(
                       <View>
                         <Text>{item.question}</Text>
-                        <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={modalAnswers[index]} onValueChange={(value) => {onValueChangeType(value, index)}}>
+                        <Picker mode='dropdown' placeholder="Click here to select answer"  iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={item.userAnswer} onValueChange={(value) => {onValueChangeType(value, index)}}>
                         {(item.answers).map((options, choice) => {
-                        return(<Picker.Item label={options} value={choice} />)
+                          return(<Picker.Item label={options} value={choice} />)
                         })}
                       </Picker>
                     </View>
-                      )
+                      )  
                   })}
-                <Picker mode='dropdown' placeholder="Click here to select answer" iosIcon={<Icon name="caretdown" type="AntDesign"/>} selectedValue={0} onValueChange={(value) => {selectedValue=value}}>
-                <Picker.Item label={"cool"} value={0} />
-                <Picker.Item label={"ok"} value={1} />
-                </Picker>
+  
                   
                 <Text>{'\n'}</Text>
                 <TouchableOpacity
@@ -365,7 +364,7 @@ const InRide = ({route, navigation: {navigate}}) => {
                     Submit
                   </Text>
                 </TouchableOpacity>
-                </View>
+              </View>    
             </Modal>
       <MapView 
         style={styles.map} 
@@ -497,6 +496,9 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5,
   },
+  sectionTitle: {
+    fontSize: 25,
+  }
 });
 
 export default InRide;

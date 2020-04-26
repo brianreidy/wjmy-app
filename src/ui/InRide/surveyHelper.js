@@ -22,12 +22,22 @@ const surveyHelper = {
                         const newKeys = Object.keys(currSurvey)
                         for (let j = 0; j < newKeys.length; j++) {
                             const currItem = currSurvey[newKeys[j]]
+                            let myKey = "item" + j
                             myItem = {
+                                id: myKey,
                                 question: currItem["Question"],
                                 userAnswer: null
                             }
                             if (currItem["Answers"]){
                                 myItem['answers'] = currItem["Answers"].split(',')
+                            } else if (currItem["Answer"]){
+                                myItem['answers'] = currItem["Answer"].split(',')
+                            } else if (currItem["answer"]){
+                                myItem['answers'] = currItem["answer"].split(',')
+                            } else if (currItem["answer"]){
+                                myItem['answers'] = currItem["answer"].split(',')
+                            } else {
+                                myItem['answers'] = 'none'
                             }
                             
                             mySurvey.content.push(myItem)
