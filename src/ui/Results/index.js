@@ -31,6 +31,7 @@ import surveyHelper from '../InRide/surveyHelper';
 // import firebase from '@react-native-firebase/app';
 // import database from '@react-native-firebase/database';
 const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRide) => {
+  let problems = ''
   if (heartRate == null) {
     Alert.alert(
       'Fitbit data not gathered',
@@ -44,23 +45,27 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
         {
           text: 'SEND',
           onPress: () => {
+            
             let obj = {}
               try {
                 myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
               } catch {
                 console.log("Magnemometer data not collected")
+                problems = problems + "Magnemometer, "
               }
               obj = {}
               try {
                 myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
               } catch {
                 console.log("Gyroscope data not collected")
+                problems = problems + "Gyroscope, "
               }
               obj = {}
               try {
                 myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
               } catch {
                 console.log("Barometer data not collected")
+                problems = problems +"Barometer, "
               }
               obj = {}
               try {
@@ -68,18 +73,21 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
               }
               catch {
                 console.log("Accelerometer data not collected")
+                problems = problems +"Accelorometer, "
               }
               obj = {}
               try {
                 myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
               } catch {
                 console.log("GPS data not collected")
+                problems = problems + "GPS, "
               }
               obj = {}
               try {
                 myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
               } catch {
                 console.log("Voice data not collected")
+                problems = problems + "Voice Markers "
               }
               obj = {}
               try {
@@ -87,6 +95,38 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
                 myRide.doc("Surveys").set(Object.assign(obj, survey), {merge: true});
               } catch (e) {
                 console.log("Not able to send surveys. Data not collected")
+                problems = problems + "Surveys, "
+              }
+              if (problems !== "") {
+                console.log("sending alert")
+                Alert.alert(
+                  'Could not send data from: ' + problems,
+                  'All other data successfully sent to database.',
+                  [
+                    {
+                      text: "OK",
+                      onPress: () => console.log('Cancel Pressed'),
+                      style: 'cancel',
+                    },
+                    
+                  ],
+                  {cancelable: false},
+                )
+                        
+              } else {
+                Alert.alert(
+                  'All data successfully saved.',
+                  'You may exit the app now or return to sign up to start a new ride.',
+                  [
+                    {
+                      text: "OK",
+                      onPress: () => console.log('Cancel Pressed'),
+                      style: 'cancel',
+                    },
+                    
+                  ],
+                  {cancelable: false},
+                )
               }
   
           },
@@ -100,18 +140,21 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
       myRide.doc('magnemometer').set(Object.assign(obj, mag), {merge: true});
     } catch {
       console.log("Magnemometer data not collected")
+      problems = problems + "Magnemometer, "
     }
     obj = {}
     try {
       myRide.doc('gyroscope').set(Object.assign(obj, gyro), {merge: true});
     } catch {
       console.log("Gyroscope data not collected")
+      problems = problems + "Gyroscope, "
     }
     obj = {}
     try {
       myRide.doc('barometer').set(Object.assign(obj, bar), {merge: true});
     } catch {
       console.log("Barometer data not collected")
+      problems = problems + "Barometer, "
     }
     obj = {}
     try {
@@ -119,28 +162,69 @@ const submitMeasures = (gps, mag, gyro, bar, acc, voice, heartRate, survey, myRi
     }
     catch {
       console.log("Accelerometer data not collected")
+      problems = problems + "Accelorometer, "
     }
     obj = {}
     try {
       myRide.doc('gps').set(Object.assign(obj, gps), {merge: true});
     } catch {
       console.log("GPS data not collected")
+      problems = problems + "GPS, "
     }
     obj = {}
     try {
       myRide.doc('voice').set(Object.assign(obj, voice), {merge: true});
     } catch {
       console.log("Voice data not collected")
+      problems = problems + "Voice Markers, "
     }
-    myRide.doc('heartrate').set(heartRate, {merge: true});
+    obj = {}
+    try {
+      myRide.doc('heartrate').set(Object.assign(obj, heartRate), {merge: true});
+    } catch {
+      problems = problems + "Heart rate, "
+    }
+    
     obj = {}
     try {
       myRide.doc("Surveys").set(Object.assign(obj, survey), {merge: true});
     } catch (e) {
       console.log("Not able to send surveys. Data not collected")
+      problems = problems + "Survey, "
     }
-    
+    if (problems !== "") {
+      console.log("sending alert")
+      Alert.alert(
+        'Could not send data from: ' + problems,
+        'All other data successfully sent to database.',
+        [
+          {
+            text: "OK",
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          
+        ],
+        {cancelable: false},
+      )
+              
+    } else {
+      Alert.alert(
+        'All data successfully sent',
+        'You may exit the app now or return to sign up to start a new ride.',
+        [
+          {
+            text: "OK",
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          
+        ],
+        {cancelable: false},
+      )
+    }
   }
+  
 };
 
 
