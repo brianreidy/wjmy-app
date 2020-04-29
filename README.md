@@ -10,6 +10,8 @@
     - [What's in src/arch](#whats-in-srcarch)
     - [What's in src/ui](#whats-in-srcui)
     - [What's in App.js](#whats-in-appjs)
+  - [Adding/Editing Surveys](##adding/Editing-the-Surveys)
+
 ## Requirements 
 
 Our current React-Native App was targeted for ios. Due to some issues getting android's deep-linking working which is explained later in the readme. So here is what you will need.
@@ -107,3 +109,9 @@ import DataResults from './src/ui/DataResults';
    <Stack.Screen name="DataResults" component={DataResults} />
 ```
 for more infomation visit [react-navigation](https://reactnavigation.org/docs/getting-started)
+
+## Adding/Editing the Surveys
+Surey questions are stored in Google Firebase's Realtime database.
+(https://console.firebase.google.com/project/wjmy-81588/database/wjmy-81588/data)
+To add a new survey, click the plus by the word 'Surveys'. You can title this survey whatever you want, and a button will be populated on the In Ride page of the app for it. If you want the survey to be on the results page of the app, be sure to title the survey 'Post Ride'. 
+To ensure that each survey populates correctly, click on the plus next to the name and to add an item. You can title this field whatever you want, (for example I've done 'Item1', 'Item2', 'Item3'). Once you've named this field, again click the plus button next to it and populate two more fields this time with the exact words 'Question' and 'Answer'. For the value for the 'Question' key, type your question. For the value for the 'Answer' key, type your answer choices separated by commas, (ie "option 1, option 2, option 3"). To edit the question or answer at any time simply click on the value, type the changes, and press enter. 

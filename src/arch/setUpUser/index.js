@@ -3,7 +3,8 @@ import generateId from '../generateId';
 const setUpUser = (name, level) => {
   console.log(name);
   let db = firestore();
-  const userID = name.concat(generateId(5).toString());
+  let now = new Date().getTime()
+  const userID = name.concat(String(now));
   let myRide = db.collection('users').doc(userID);
   myRide.set({Name: name, Level: level});
   // if this is first ride, add logic later if not first ride

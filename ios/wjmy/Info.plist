@@ -52,6 +52,10 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Need location to track bike ride</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>User&apos;s notes can be recorded in database </string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>User can take notes while on bike ride</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
@@ -70,5 +74,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Ionicons.ttf</string>
+		<string>FontAwesome.ttf</string>
+		<string>AntDesign.ttf</string>
+	</array>
 </dict>
 </plist>
